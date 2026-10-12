@@ -1,13 +1,13 @@
 {
-  "name": "upplz-tools",
+  "name": "upplz",
   "owner": { "name": "Upplz" },
   "description": "웹 게임/앱을 iOS·Android로 빌드·배포하는 upplz 플러그인 마켓플레이스",
   "plugins": [
     {
       "name": "upplz",
       "source": "./plugins/upplz",
-      "description": "테스트 업로드(빌드만)·출시 업로드(메타·아이콘·스샷 점검 포함)·메타데이터·아이콘·스크린샷 스킬 + 원격 upplz MCP 서버 연결 번들",
-      "version": "2026.9.3",
+      "description": "배포 설정 원스톱·테스트 업로드(빌드만)·출시 업로드(메타·아이콘·스샷 점검 포함)·메타데이터·아이콘·스크린샷 스킬 + 원격 upplz MCP 서버 연결 번들",
+      "version": "2026.10.1",
       "author": { "name": "Upplz" },
       "keywords": ["ios", "android", "build", "deployment", "capacitor", "app-store", "play-store", "fastlane"]
     }

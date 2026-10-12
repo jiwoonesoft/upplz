@@ -40,14 +40,14 @@
 
 ## 빌드 환경 설치 — 에이전트가 설치한다
 
-**설치 방법을 알려 주고 끝내지 않는다.** 점검에서 빠진 도구가 나오면 무엇을 왜 설치하는지 한 줄로 알리고 **곧바로 설치 명령을 실행**한다. 실행 승인은 Claude Code 의 도구 권한 확인이 맡으므로 "설치할까요?" 를 따로 묻지 않는다. 설치가 끝나면 같은 점검(멈췄던 스크립트라면 그 스크립트)을 다시 돌려 `✓` 를 확인하고 이어서 진행한다.
+**설치 방법을 알려 주고 끝내지 않는다.** 점검에서 빠진 도구가 나오면 무엇을 왜 설치하는지 한 줄로 알리고 **곧바로 설치 명령을 실행**한다. 실행 승인은 에이전트(Claude Code·Codex)의 도구 권한 확인이 맡으므로 "설치할까요?" 를 따로 묻지 않는다. 설치가 끝나면 같은 점검(멈췄던 스크립트라면 그 스크립트)을 다시 돌려 `✓` 를 확인하고 이어서 진행한다.
 
 단 **1 GB 를 넘거나 시스템 구성요소를 까는 것**(Docker Desktop·Flutter SDK·`web-game-android` 이미지 빌드 — Android SDK 를 받아 수 GB)은 무엇을 얼마나 받는지(용량·걸리는 시간, Docker Desktop 은 조직 규모에 따라 유료 구독 조건이 있는 약관)를 한 줄로 먼저 알리고 실행한다. 권한 자동 허용 세션에서는 도구 권한 확인이 동의를 대신하지 못하기 때문이다.
 
 - **빠진 것을 모아 한 번에 설치한다.** brew 패키지는 한 명령으로 묶는다(예: `brew install fastlane cocoapods node`). 오래 걸리는 것(Xcode 다운로드, Docker 이미지 빌드)은 기다리는 동안 다른 준비를 이어 간다.
 - **에이전트가 할 수 없는 것만 사용자에게 넘긴다** — 관리자 비밀번호(`sudo`), GUI 확인(App Store 「받기」, 설치 대화상자, 약관 동의), 로그인(Apple ID, `gh auth login`). 에이전트의 Bash 는 비밀번호·대화형 입력을 받을 수 없다. 이때도 "직접 설치하세요" 가 아니라 **터미널 앱에 붙여 넣을 명령 한 줄**이나 **누를 버튼 하나**만 요청하고, 사용자가 끝냈다고 하면 에이전트가 다시 점검한다.
 - `sudo` 가 필요한 설치 방법은 고르지 않는다(시스템 ruby 에 `gem install fastlane` 등). 아래 표의 방법은 원칙적으로 비밀번호 없이 되지만 **Docker Desktop 은 예외가 있다**(그 행 참조).
-- 설치 직후 명령을 못 찾으면 PATH 문제다. 에이전트의 Bash 는 호출마다 새 셸이라 `eval` 은 **그 호출 안에서만** 유효하다 — Homebrew 는 `shellenv` 줄을 `~/.zprofile` 에 넣어 두면 다음 호출부터 잡히고, 같은 호출에서 이어 쓸 때만 명령 앞에 `eval "$(/opt/homebrew/bin/brew shellenv)" &&` 를 붙인다. 윈도(winget)는 Claude Code 를 다시 시작해야 새 PATH 가 보인다.
+- 설치 직후 명령을 못 찾으면 PATH 문제다. 에이전트의 Bash 는 호출마다 새 셸이라 `eval` 은 **그 호출 안에서만** 유효하다 — Homebrew 는 `shellenv` 줄을 `~/.zprofile` 에 넣어 두면 다음 호출부터 잡히고, 같은 호출에서 이어 쓸 때만 명령 앞에 `eval "$(/opt/homebrew/bin/brew shellenv)" &&` 를 붙인다. 윈도(winget)는 에이전트를 다시 시작해야 새 PATH 가 보인다.
 
 **맥**
 
@@ -65,18 +65,18 @@
 | gh | 인증서 저장소 clone 자격(선택 — git credential helper 로도 된다) | `gh --version` | `brew install gh` | 로그인: 터미널 앱에서 `gh auth login` |
 | ImageMagick | 아이콘·프레임 합성 | `magick -version` | `brew install imagemagick`(SVG 고품질 래스터화는 `librsvg` 도) | — |
 | Docker Desktop | Android(macOS 14 이상) | `docker info` | 없으면 `brew install --cask docker-desktop`. 설치돼 있는데 데몬이 꺼져 있으면 `open -a Docker` 후 `docker info` 가 될 때까지 최대 2분 기다린다 | 첫 실행의 약관 동의·권한 허용(관리자 비밀번호). **brew 가 `/usr/local/bin/kubectl` 심링크 때문에 관리자 비밀번호를 물으면**(`/usr/local/bin` 이 쓰기 불가인 Apple Silicon 새 맥에서 흔하다 — 에이전트 쪽에서는 `sudo: a terminal is required` 로 실패한다) 같은 `brew install --cask docker-desktop` 을 터미널 앱에서 실행하도록 넘긴다 |
-| `web-game-android` 이미지 | Android | `docker image inspect web-game-android --format '{{.Architecture}}'` 가 `amd64` | `docker build --platform linux/amd64 -t web-game-android "${CLAUDE_PLUGIN_ROOT}/docker/android"`(수 분 — 백그라운드로 돌린다). arm64 로 나오면 같은 명령으로 다시 만든다 | — |
+| `web-game-android` 이미지 | Android | `docker image inspect web-game-android --format '{{.Architecture}}'` 가 `amd64` | `docker build --platform linux/amd64 -t web-game-android "<플러그인 루트>/docker/android"`(수 분 — 백그라운드로 돌린다). arm64 로 나오면 같은 명령으로 다시 만든다 | — |
 
 **윈도(Git Bash, Android 만 — 미검증)**
 
 | 도구 | 확인 | 에이전트가 실행 | 사용자에게 넘기는 것 |
 |---|---|---|---|
 | Docker Desktop | `docker info` | 없으면 `winget install -e --id Docker.DockerDesktop`. 데몬이 꺼져 있으면 `"/c/Program Files/Docker/Docker/Docker Desktop.exe" &` 후 `docker info` 를 기다린다 | UAC 허용, 재부팅·WSL 2 설치 요청이 나오면 그 절차 |
-| Node.js(owner) | `node --version` | `winget install -e --id OpenJS.NodeJS.LTS` | UAC 허용. 설치 뒤 Claude Code 재시작(새 PATH) |
+| Node.js(owner) | `node --version` | `winget install -e --id OpenJS.NodeJS.LTS` | UAC 허용. 설치 뒤 에이전트 재시작(새 PATH) |
 | openssl | `openssl version` | 설치하지 않는다 — Git for Windows 에 들어 있다 | — |
 | `web-game-android` 이미지 | 맥과 같다 | 맥과 같은 `docker build` 명령 | — |
 
-**이미지 빌드 경로**: `${CLAUDE_PLUGIN_ROOT}/docker/android` 는 이 플러그인에 들어 있는 Dockerfile 폴더다. 경로가 치환되지 않은 채로 보이면 `ls -d ~/.claude/plugins/cache/*/upplz/*/docker/android | tail -1` 로 찾는다. 둘 다 없으면 플러그인이 2026.9.3 미만이다(Dockerfile 이 들어 있지 않다) — `/plugin marketplace update upplz-tools` 로 갱신한 뒤 다시 찾는다.
+**이미지 빌드 경로**: `<플러그인 루트>/docker/android` 는 이 플러그인에 들어 있는 Dockerfile 폴더다(플러그인 루트 = 스킬 파일 `skills/<이름>/SKILL.md` 의 두 단계 위 — 이 문서 기준으로는 한 단계 위). 루트를 모르면 `find ~/.claude/plugins/cache ~/.codex/plugins/cache -type d -path '*upplz*/docker/android' 2>/dev/null | head -1` 로 찾는다. 그래도 없으면 플러그인이 2026.9.3 미만이다(Dockerfile 이 들어 있지 않다) — Claude Code 는 `/plugin marketplace update upplz`, Codex 는 `codex plugin marketplace upgrade upplz` 로 갱신한 뒤 다시 찾는다.
 
 ## iOS 최초 셋업
 
@@ -134,7 +134,7 @@ Android는 Apple 크레덴셜과 분리된 경로다. 빌드·업로드는 사�
 > **인증서 저장소는 플랫폼 공통이다.** 시크릿 키 이름이 `ios/match-repo-url` 이지만 Android 도 같은 값을 읽는다 — iOS 를 이미 설정했다면 같은 저장소가 자동으로 쓰이고, Android 전용 프로젝트만 `matchRepoUrl` 파라미터로 한 번 등록하면 된다(`ios/` 접두사는 역사적 흔적이다).
 
 1. `analyze_repository` — repoType/framework/hasCapacitor/hasMobileSupport 확인(도구가 projectType을 직접 반환하지 않는다). 이 결과와 `android/` 디렉토리 존재 여부로 에이전트가 projectType(web-capacitor/native-android)을 판단한다.
-2. 빌드 환경 준비 — Docker Desktop(데몬 실행 중)과 `web-game-android` 이미지(**amd64**), owner 면 Node.js 가 필요하다. 빠진 것은 위 「빌드 환경 설치」대로 **에이전트가 설치·실행·빌드한다** — 이미지는 이 플러그인에 들어 있는 Dockerfile 로 `docker build --platform linux/amd64 -t web-game-android "${CLAUDE_PLUGIN_ROOT}/docker/android"` 를 실행한다. Apple Silicon 맥에서도 반드시 `--platform linux/amd64` 로 만든다 — 스크립트가 `--platform linux/amd64` 로 실행하므로, arm64 로 빌드된 옛 이미지는 맞는 이미지를 찾지 못해 pull 을 시도하다 실패한다. 최종 점검은 `start_build` 응답의 preflightScript 가 하며, 거기서 `✗` 가 나와도 같은 방식으로 준비하고 다시 실행한다.
+2. 빌드 환경 준비 — Docker Desktop(데몬 실행 중)과 `web-game-android` 이미지(**amd64**), owner 면 Node.js 가 필요하다. 빠진 것은 위 「빌드 환경 설치」대로 **에이전트가 설치·실행·빌드한다** — 이미지는 이 플러그인에 들어 있는 Dockerfile 로 `docker build --platform linux/amd64 -t web-game-android "<플러그인 루트>/docker/android"` 를 실행한다. Apple Silicon 맥에서도 반드시 `--platform linux/amd64` 로 만든다 — 스크립트가 `--platform linux/amd64` 로 실행하므로, arm64 로 빌드된 옛 이미지는 맞는 이미지를 찾지 못해 pull 을 시도하다 실패한다. 최종 점검은 `start_build` 응답의 preflightScript 가 하며, 거기서 `✗` 가 나와도 같은 방식으로 준비하고 다시 실행한다.
 3. `setup_project({ platform: "android", bundleId: packageName, packageName, appName })` — `bundleId`는 zod 스키마상 항상 필수(빠뜨리면 도구 호출이 거부됨)이므로 Android에서도 반드시 전달해야 하며, 보통 `packageName`과 동일한 값을 넣는다. Capacitor Android 플랫폼 스캐폴드(web-capacitor 전용, `packageName` 미지정 시 `bundleId` 값을 패키지명으로 대체 — `packageName` 명시를 권장). native-android는 이미 `android/`가 있으므로 건너뛴다. **packageName에 언더스코어(`_`)가 포함되면 `bundleId` 필드 형식(하이픈만 허용)과 달라 그대로 넣을 수 없음 — 이 경우 `bundleId`에는 언더스코어를 뺀 유효 값을 넣고 `packageName`을 별도 지정한다.**
 4. (수동) 변경분 커밋·push — **push하지 않으면 start_build가 원격의 이전 코드로 빌드된다.**
 5. `setup_android_keystore({ packageName, matchRepoUrl?, matchPassword? })` (**owner 전용**) — keystore 를 **인증서 저장소에 준비**하는 로컬 스크립트. 스크립트는 사용자 본인 git 자격으로 저장소를 받아 **3분기**로 동작한다: ① 저장소에 `android/<packageName>.keystore` 가 있으면 **프로젝트 비밀번호로 열어 보고 재사용** ② 이 머신에 옛 로컬 keystore 가 있으면 내용 그대로 저장소로 **이관**해 push ③ 둘 다 없으면 Docker 의 keytool 로 프로젝트 비밀번호를 써서 **생성**해 push. **기존 파일은 어느 경우에도 덮어쓰지 않는다** — Play 앱 서명(Play App Signing)을 쓰는 앱에서 이 keystore 는 **업로드 키**라 분실·유출 시 Play Console 의 업로드 키 재설정으로 **교체할 수 있지만**(앱 서명 키는 Google 이 보관), 재설정에는 Google 지원 절차와 시간이 들고 그동안 업로드가 막히며, **Play 앱 서명을 쓰지 않는 옛 앱**이라면 이 keystore 가 곧 앱 서명 키라 **교체 불가**다.

@@ -1,5 +1,5 @@
 # upplz 플러그인에 포함된 Android 빌드 이미지. 모든 스크립트가 --platform linux/amd64 로 실행하므로 어느 머신에서든:
-#   docker build --platform linux/amd64 -t web-game-android "${CLAUDE_PLUGIN_ROOT}/docker/android"
+#   docker build --platform linux/amd64 -t web-game-android "<플러그인 루트>/docker/android"
 FROM ubuntu:24.04
 
 ENV DEBIAN_FRONTEND=noninteractive

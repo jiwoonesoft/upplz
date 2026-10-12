@@ -10,7 +10,10 @@ description: 앱 스토어용 스크린샷을 생성하고 디바이스 프레�
 - 스토어 스크린샷을 새로 만들거나 갱신할 때.
 
 ## Routing (첫 단계, 필수)
-`${CLAUDE_PLUGIN_ROOT}/references/routing.md` 로드 + **projectType 확인**. iOS 캡처는 맥 필요(비맥이면 iOS 맥 전용 게이트).
+
+> 플러그인 루트 = 이 SKILL.md 가 있는 디렉토리의 두 단계 위다(`skills/upplz-screenshot/SKILL.md`). 아래 `<플러그인 루트>/…` 는 그 경로다.
+
+`<플러그인 루트>/references/routing.md` 로드 + **projectType 확인**. iOS 캡처는 맥 필요(비맥이면 iOS 맥 전용 게이트).
 
 ## Process
 projectType으로 캡처 방법을 분기한다:
@@ -29,4 +32,4 @@ projectType으로 캡처 방법을 분기한다:
 - 스크린샷 파일 생성(`ios/fastlane/screenshots/**`). apply 시 스토어 반영.
 
 ## Next
-`${CLAUDE_PLUGIN_ROOT}/references/chaining.md`: 메타데이터 반영?(apply, upplz-metadata) / 재빌드?(upplz-upload-build-only).
+`<플러그인 루트>/references/chaining.md`: 메타데이터 반영?(apply, upplz-metadata) / 재빌드?(upplz-upload-build-only).

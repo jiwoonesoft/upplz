@@ -1,0 +1,11 @@
+{
+  "name": "upplz",
+  "interface": { "displayName": "Upplz" },
+  "plugins": [
+    {
+      "name": "upplz",
+      "source": { "source": "local", "path": "./plugins/upplz" },
+      "category": "Developer Tools"
+    }
+  ]
+}

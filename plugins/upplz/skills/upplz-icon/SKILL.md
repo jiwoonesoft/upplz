@@ -14,7 +14,10 @@ description: 앱 아이콘을 생성하거나 교체할 때 사용. 소스 이�
 - 앱 아이콘을 처음 넣거나 교체할 때(기존 이미지 사용 또는 새로 생성 모두 포함).
 
 ## Routing (첫 단계, 필수)
-`${CLAUDE_PLUGIN_ROOT}/references/routing.md` 로드. 리사이즈는 로컬 ImageMagick(맥/윈도 무관하나, 반영을 위한 재빌드는 iOS 규칙 적용 — 비맥이면 재빌드 단계에서 iOS 맥 전용 게이트).
+
+> 플러그인 루트 = 이 SKILL.md 가 있는 디렉토리의 두 단계 위다(`skills/upplz-icon/SKILL.md`). 아래 `<플러그인 루트>/…` 는 그 경로다.
+
+`<플러그인 루트>/references/routing.md` 로드. 리사이즈는 로컬 ImageMagick(맥/윈도 무관하나, 반영을 위한 재빌드는 iOS 규칙 적용 — 비맥이면 재빌드 단계에서 iOS 맥 전용 게이트).
 
 ## Process
 1. 소스 확보:
@@ -27,4 +30,4 @@ description: 앱 아이콘을 생성하거나 교체할 때 사용. 소스 이�
 - `AppIcon.appiconset`에 1024 마스터 아이콘 생성됨(파생 사이즈는 Xcode가 빌드 시 자동 생성).
 
 ## Next
-`${CLAUDE_PLUGIN_ROOT}/references/chaining.md`: **아이콘 변경은 재빌드해야 반영된다** → upplz-upload-build-only로 재빌드→업로드를 이어서 진행할지 물어본다(출시 흐름 중이면 upplz-upload로 복귀해 나머지 점검(2–3) 후 4단계에서 재빌드).
+`<플러그인 루트>/references/chaining.md`: **아이콘 변경은 재빌드해야 반영된다** → upplz-upload-build-only로 재빌드→업로드를 이어서 진행할지 물어본다(출시 흐름 중이면 upplz-upload로 복귀해 나머지 점검(2–3) 후 4단계에서 재빌드).

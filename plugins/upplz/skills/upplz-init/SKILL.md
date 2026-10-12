@@ -23,7 +23,7 @@ Codex 플러그인은 MCP 서버를 번들하지 않는다(설치 때 값을 묻
 
 0. **먼저 지금 상태를 본다** — 값이 찍히지 않는 두 명령만 쓴다.
    - 키 줄: `grep -qs '^UPPLZ_API_KEY=.' ~/.codex/.env && echo set || echo missing` 이 `set` 인가(`missing` 이면 줄이 없거나 값이 비었거나 파일이 없다).
-   - 등록: `codex mcp get upplz` 출력의 `url` 줄이 `<엔드포인트>/mcp` 이고 `bearer_token_env_var` 줄에 `UPPLZ_API_KEY` 가 보이는가(변수 이름만 찍힌다).
+   - 등록: `codex mcp get upplz` 출력의 `url` 줄이 자리표시자(`https://YOUR-UPPLZ-ENDPOINT`)가 아니고 `/mcp` 로 끝나며 `bearer_token_env_var` 줄에 `UPPLZ_API_KEY` 가 보이는가(변수 이름만 찍힌다). 실제 주소가 맞는지는 에이전트가 판정할 수 없다 — 의심되면 사용자에게 대시보드 「Codex」탭의 주소와 대조해 달라고 한다(엔드포인트를 되묻지 않는다).
 
    `cat` 으로 `.env` 를 열거나 `echo` 로 변수를 찍는 명령, `env`·`printenv`·`set` 처럼 환경 전체를 찍는 명령은 쓰지 않는다 — 키가 이 대화와 세션 기록에 남는다(Codex 는 `.env` 의 키를 에이전트가 실행하는 셸 명령의 환경에도 넘긴다).
    하나라도 아니면 1 로 간다. 둘 다 정상인데 이 세션에 도구가 없으면 등록 뒤 재시작하지 않은 것이 가장 흔하다 — 3 의 재시작 안내를 하고 멈춘다. 사용자가 이미 재시작했다고 하면 4 로 간다.
@@ -54,7 +54,7 @@ Codex 플러그인은 MCP 서버를 번들하지 않는다(설치 때 값을 묻
 
 1. `<플러그인 루트>/references/routing.md` 를 읽어 **머신(맥/윈도) × 대상(iOS/Android)**을 확정한다. 게이트에 걸리면(iOS ∧ 비맥) 그 문서의 안내로 **중단**한다. 윈도에서는 Android 만 진행한다(Git Bash + Docker Desktop).
 2. 첫 upplz MCP 도구 호출이 연결/인증에 실패하면 routing.md의 **MCP 연결 게이트**를 그대로 따르고 중단한다. 특히 401 `invalid_or_inactive`면:
-   > "이 키는 폐기됐거나 다른 프로젝트의 키입니다. upplz 대시보드의 **프로젝트 페이지**에서 키를 다시 발급받아 넣어 주세요 — Claude Code 는 `/plugin` → upplz 설정에, Codex 는 `~/.codex/.env` 의 `UPPLZ_API_KEY` 에(§0 의 명령 두 줄) 넣고 재시작합니다."
+   > "이 키는 폐기됐거나 다른 프로젝트의 키입니다. upplz 대시보드의 **프로젝트 페이지**에서 키를 다시 발급받아 넣어 주세요 — Claude Code 는 `/plugin` → upplz 설정에, Codex 는 `~/.codex/.env` 의 `UPPLZ_API_KEY` 에(§0 의 첫 줄 — `.env` 기록 명령) 넣고 재시작합니다."
 
 ## 2. 상태 판정 — 서버 + 로컬
 
@@ -66,7 +66,7 @@ Codex 플러그인은 MCP 서버를 번들하지 않는다(설치 때 값을 묻
    - **서버는 Apple·Google 을 조회하지 않는다** — 판정은 DB 기록(시크릿 존재·audit·빌드)만 본다. 앱 레코드·프로비저닝 프로파일·저장소 안 파일의 실존은 판정에 없고, 없으면 스크립트 실행 중에 드러난다.
    - **Android 는 패키지명을 알게 된 순간부터 `packageName` 도 함께 넘긴다** — `get_setup_status({ platform: "android", packageName })`. 선택 파라미터이고 **판정은 바뀌지 않는다.** 대신 `nextStepHint` 의 요청문에 `setup_android_keystore({ packageName: "com.example.app" })` 처럼 **실제 패키지명이 찍혀**, 협업자가 owner 에게 그 문장을 그대로 전달하면 owner 가 되묻지 않는다. 첫 호출에서는 아직 모를 수 있다 — **그때는 넘기지 않고**(자리표시자가 나간다) 2-2 나 first-time-setup.md Android 3 에서 값을 확인한 뒤의 **재호출부터** 넘긴다. 사용자에게 억지로 묻지 않는다.
    - 대상이 확실하지 않으면 **사용자에게 "이 앱을 App Store 에도 올릴 계획인가요?" 로 한 번 확인**한다(Apple Developer Program 은 연 $99이므로 추측으로 Apple 크레덴셜 등록을 시키지 않는다). Android 만 할 계획이면 `platform: "android"` 로 호출하면 되고, 그러면 최상위 판정에 Apple 상태가 섞이지 않는다.
-2. **로컬 상태**: `Bash`로 아래를 확인한다(값만 읽고 판단은 first-time-setup.md에 맡긴다).
+2. **로컬 상태**: 셸에서 아래를 실행해 확인한다(값만 읽고 판단은 first-time-setup.md에 맡긴다).
 
    > **점검은 절대 절차를 멈추지 않는다.** 도구가 없거나 저장소 상태가 달라 명령이 실패해도 **중단하지 말고** 그 항목만 "확인 못 함"으로 기록하고 다음 점검으로 넘어간다. 아래 명령은 모두 미설치·미설정 상태에서도 정상 종료하도록 쓰여 있다 — 임의로 바꾸지 말 것.
 
@@ -161,7 +161,7 @@ owner 전용 도구는 **21개 중 4개**다(서버 `requireOwner` 가드 기준
 > `.p8` 키와 Play Service Account JSON 은 **파일의 절대 경로만** 알려 주세요(예: `/Users/me/Downloads/AuthKey_ABC123DEF4.p8`). 제가 파일을 열어 읽지 않고, 반환되는 스크립트가 이 머신에서 직접 암호화해 인증서 저장소에 넣습니다 — 키 본문은 대화 기록에도 upplz 서버에도 남지 않습니다.
 > Key ID·Issuer ID·Team ID·저장소 URL 은 비밀이 아니므로 여기에 입력해 주세요. **프로젝트 비밀번호**(최초 1회)는 도구에 넘겨야 하므로 대화 기록에 남습니다 — 비밀번호 관리자에도 함께 보관하세요.
 
-- **`.p8`·SA JSON 파일은 `Read` 로 읽지 않는다.** 경로만 다룬다. 경로에 한글 등 비 ASCII 문자가 있으면 도구가 거부하므로(스크립트에 그대로 들어가는 값이라 허용 문자를 좁혔다) 파일을 영문 경로로 옮겨 달라고 안내한다 — **사용자 이름이 한글이면 `~/Downloads` 도 한글 경로**이므로(윈도에 흔하다: `C:\Users\홍길동`) 윈도 Git Bash 는 `/c/upplz/`, 맥은 `/Users/Shared/upplz/` 같은 사용자 폴더 밖 영문 폴더를 예로 든다.
+- **`.p8`·SA JSON 파일은 어떤 도구로도 열어 읽지 않는다**(경로만 다룬다). 경로에 한글 등 비 ASCII 문자가 있으면 도구가 거부하므로(스크립트에 그대로 들어가는 값이라 허용 문자를 좁혔다) 파일을 영문 경로로 옮겨 달라고 안내한다 — **사용자 이름이 한글이면 `~/Downloads` 도 한글 경로**이므로(윈도에 흔하다: `C:\Users\홍길동`) 윈도 Git Bash 는 `/c/upplz/`, 맥은 `/Users/Shared/upplz/` 같은 사용자 폴더 밖 영문 폴더를 예로 든다.
 - **`client_email`** 은 공개 식별자다. `jq -r .client_email <파일>` 로 뽑고, `jq` 가 없으면 `node -e 'console.log(require(process.argv[1]).client_email)' <파일>` 을 쓴다 — 두 명령 모두 이메일 한 줄만 출력하므로 키 본문이 대화에 올라오지 않는다.
 - 어느 경로든 **받은 값을 요약·복창하지 않는다**. 저장 후에는 "등록 스크립트를 실행하면 끝납니다"만 보고한다(도구 응답도 입력값을 되돌려 주지 않는다).
 

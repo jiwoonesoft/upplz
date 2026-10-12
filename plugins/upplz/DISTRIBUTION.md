@@ -67,11 +67,12 @@ upplz/                               # 공개 git 저장소 (마켓플레이스)
 ## 고객 설치 절차
 
 ### Claude Code
+`/plugin install` 중에 Upplz API Key·Upplz MCP Endpoint 를 입력하고, 마지막 줄 `/upplz:init` 으로 배포 설정을 시작한다(프로젝트당 1회).
 ```
 /plugin marketplace add jiwoonesoft/upplz
-/plugin install upplz@upplz        # 설치 중 Upplz API Key·Upplz MCP Endpoint 입력
+/plugin install upplz@upplz
 /reload-plugins
-/upplz:init                        # 배포 설정 시작(프로젝트당 1회)
+/upplz:init
 ```
 - `userConfig` 에 따라 **Upplz API Key**(`sensitive: true`, keychain 저장)와 **Upplz MCP Endpoint** 를 묻는다. 저장된 값은 번들 MCP 서버의 `Authorization: Bearer ${user_config.api_key}` 헤더로 주입된다.
 
@@ -100,12 +101,12 @@ codex plugin add upplz@upplz
 
 ## 기존 사용자 이관 (2026-10-12 이름 변경)
 
-Claude Code 에 옛 이름으로 등록된 마켓은 **제거 후 재추가**한다 — 등록 이름과 파일 안 이름이 어긋난 마켓을 Claude Code 가 어떻게 다루는지 확인되지 않아 이것을 표준으로 둔다. `/plugin marketplace remove upplz-tools` 가 설치된 플러그인 때문에 거부되면 첫 줄(`/plugin uninstall upplz@upplz-tools`)을 먼저 실행한다.
+Claude Code 에 옛 이름으로 등록된 마켓은 **제거 후 재추가**한다 — 등록 이름과 파일 안 이름이 어긋난 마켓을 Claude Code 가 어떻게 다루는지 확인되지 않아 이것을 표준으로 둔다. `/plugin marketplace remove upplz-tools` 가 설치된 플러그인 때문에 거부되면 첫 줄(`/plugin uninstall upplz@upplz-tools`)을 먼저 실행한다. `/plugin install upplz@upplz` 는 키·엔드포인트를 다시 묻는다.
 ```
 /plugin uninstall upplz@upplz-tools
 /plugin marketplace remove upplz-tools
 /plugin marketplace add jiwoonesoft/upplz
-/plugin install upplz@upplz        # 키·엔드포인트를 다시 묻는다
+/plugin install upplz@upplz
 /reload-plugins
 ```
 `upplz-plugins` 주소는 GitHub 리다이렉트로 계속 닿지만 새 안내에는 쓰지 않는다. 대시보드는 새 명령만 보여 주고 이 절차로 가는 단서가 없으므로, 이름이 바뀐 릴리스를 게시할 때 기존 설치자에게 이 절차를 직접 알린다(「버전 업데이트 배포」 5).

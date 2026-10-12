@@ -4,7 +4,7 @@
 
 ## 배포 채널: 공개 마켓 저장소 `jiwoonesoft/upplz`
 
-서버 코드와 분리된 **별도 공개 git 저장소**로 배포한다(플러그인만 담기므로 공개해도 서버 노출 없음). 2026-10-12 에 저장소 이름을 `upplz-plugins` 에서 `upplz` 로, 마켓 이름을 `upplz-tools` 에서 `upplz` 로 바꿨다 — GitHub 가 옛 이름에서 리다이렉트를 유지하므로 옛 등록의 갱신은 계속 닿지만, 등록 이름이 어긋나므로 「기존 사용자 이관」을 따른다.
+서버 코드와 분리된 **별도 공개 git 저장소**로 배포한다(플러그인만 담기므로 공개해도 서버 노출 없음). 2026-10-12 에 저장소 이름과 마켓 이름을 모두 `upplz` 로 바꿨다 — 그 전에 옛 이름으로 등록한 사용자는 「기존 사용자 이관」을 따른다.
 
 ### 저장소 레이아웃
 
@@ -62,7 +62,7 @@ upplz/                               # 공개 git 저장소 (마켓플레이스)
 }
 ```
 
-> 두 스키마는 배포 직전 공식 문서로 최종 확인한다 — Claude Code: https://code.claude.com/docs/en/plugin-marketplaces.md · Codex: https://developers.openai.com/plugins/build/plugins . Codex 카탈로그 항목의 `policy` 는 생략했다 — 아래 「Codex 설치 흐름 검증」 1단계에서 Codex 가 거부하면 항목에 `"policy": { "installation": "AVAILABLE" }` 을 넣고 위 예시도 함께 고친다.
+> 두 스키마는 배포 직전 공식 문서로 최종 확인한다 — Claude Code: https://code.claude.com/docs/en/plugin-marketplaces.md · Codex: https://developers.openai.com/plugins/build/plugins . Codex 카탈로그 항목의 `policy` 는 생략했다 — `policy` 는 생략해도 설치된다(2026-10-12 실측, codex-cli 0.162.1: `policy` 없는 위 카탈로그로 `codex plugin marketplace add`·`codex plugin add` 가 모두 성공했다).
 
 ## 고객 설치 절차
 
@@ -93,7 +93,7 @@ codex plugin add upplz@upplz
 1. 본 저장소 `plugin/` 에서 변경 → 리뷰/머지.
 2. `plugin/.claude-plugin/plugin.json`·`plugin/.codex-plugin/plugin.json` 의 `version` 상향(같은 값 — `src/mcp/plugin-docs-drift.test.ts` 가 고정).
 3. 마켓 저장소(`jiwoonesoft/upplz`)의 로컬 클론(이하 `<클론>`)의 `plugins/upplz/` 에 동기화: `rsync -a --delete plugin/ <클론>/plugins/upplz/`(점 디렉토리 `.claude-plugin/`·`.codex-plugin/` 과 `docker/` 가 함께 간다 — 동기화 뒤 `ls -a <클론>/plugins/upplz` 로 확인). `<클론>/.claude-plugin/marketplace.json` 의 `version` 반영(Codex 카탈로그는 건드리지 않는다) → `diff -r plugin <클론>/plugins/upplz` 가 비어 있는지 확인 → push(사용자 지시 시).
-4. 고객 갱신: Claude Code `/plugin marketplace update upplz` 후 재설치/갱신, Codex `codex plugin marketplace upgrade upplz` 후 `codex plugin remove upplz@upplz` → `codex plugin add upplz@upplz`(캐시 복사본이라 재설치해야 반영된다).
+4. 고객 갱신: Claude Code `/plugin marketplace update upplz` 후 재설치/갱신, Codex `codex plugin marketplace upgrade upplz`(Git 마켓 스냅숏을 새로 받으면서 설치된 플러그인 캐시도 새 버전으로 바꾼다 — 재설치 불필요, 2026-10-12 실측). 로컬 경로로 추가한 마켓(아래 검증 체크리스트)은 `upgrade` 대상이 아니다(`is not configured as a Git marketplace`) — `codex plugin add upplz@upplz` 를 다시 실행하면 새 버전으로 교체된다.
 
 > Claude Code 의 `userConfig` 는 **설치 시점에만** 프롬프트된다. 업데이트만으로는 재입력되지 않으므로, 키 변경이 필요하면 재설치를 안내한다. Codex 는 `.env` 값만 바꾸면 된다.
 
@@ -120,7 +120,7 @@ Claude Code 에 옛 이름으로 등록된 마켓은 **제거 후 재추가**한
 
 마켓 저장소 로컬 클론에 변경을 반영한 상태에서, Codex CLI 가 설치된 맥에서 로그인 없이:
 1. `codex plugin marketplace add <클론 절대 경로>` → `codex plugin list` 에 `upplz@upplz` 가 보인다.
-2. `codex plugin add upplz@upplz` → `find ~/.codex/plugins/cache -maxdepth 6 -name SKILL.md | grep upplz-init` 이 1건 이상, 같은 캐시에 `references/`·`docker/android/Dockerfile`·`.codex-plugin/plugin.json` 이 있다.
+2. `codex plugin add upplz@upplz` → `find ~/.codex/plugins/cache -maxdepth 6 -name SKILL.md | grep upplz-init` 이 1건 이상, 같은 캐시(`~/.codex/plugins/cache/upplz/upplz/<버전>/`)에 `references/`·`docker/android/Dockerfile`·`.codex-plugin/plugin.json` 이 있고 `.codex-plugin/migrated-command-skills/` 는 **없다**(`commands/init.md` 의 `$ARGUMENTS` 가 Codex 의 커맨드→스킬 변환을 막는다 — 생기면 같은 절차의 스킬이 둘이 된다).
 3. `codex mcp add upplz --url http://127.0.0.1:3100/mcp --bearer-token-env-var UPPLZ_API_KEY` → `codex mcp get upplz` 에 `bearer_token_env_var` 가 찍힌다.
 4. 원복: `codex mcp remove upplz`, `codex plugin remove upplz@upplz`, `codex plugin marketplace remove upplz`.
 

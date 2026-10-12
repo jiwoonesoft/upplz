@@ -94,8 +94,9 @@ codex plugin add upplz@upplz
 2. `plugin/.claude-plugin/plugin.json`·`plugin/.codex-plugin/plugin.json` 의 `version` 상향(같은 값 — `src/mcp/plugin-docs-drift.test.ts` 가 고정).
 3. 마켓 저장소(`jiwoonesoft/upplz`)의 로컬 클론(이하 `<클론>`)의 `plugins/upplz/` 에 동기화: `rsync -a --delete plugin/ <클론>/plugins/upplz/`(점 디렉토리 `.claude-plugin/`·`.codex-plugin/` 과 `docker/` 가 함께 간다 — 동기화 뒤 `ls -a <클론>/plugins/upplz` 로 확인). `<클론>/.claude-plugin/marketplace.json` 의 `version` 반영(Codex 카탈로그는 건드리지 않는다) → `diff -r plugin <클론>/plugins/upplz` 가 비어 있는지 확인 → push(사용자 지시 시).
 4. 고객 갱신: Claude Code `/plugin marketplace update upplz` 후 재설치/갱신, Codex `codex plugin marketplace upgrade upplz`(Git 마켓 스냅숏을 새로 받으면서 설치된 플러그인 캐시도 새 버전으로 바꾼다 — 재설치 불필요. 2026-10-12 실측은 https URL 을 git `insteadOf` 로 로컬 bare 저장소에 붙인 대역 Git 마켓에서 했고, 고객이 쓰는 `jiwoonesoft/upplz`(owner/repo) 마켓에서는 미검증이다). `upgrade` 뒤에도 `codex plugin list` 의 `upplz@upplz` 버전이 그대로면 `codex plugin remove upplz@upplz` → `codex plugin add upplz@upplz` 로 다시 설치한다. 로컬 경로로 추가한 마켓(아래 검증 체크리스트)은 `upgrade` 대상이 아니다(`is not configured as a Git marketplace`) — `codex plugin add upplz@upplz` 를 다시 실행하면 새 버전으로 교체된다.
+5. **게시 순서 — 마켓이 웹 안내보다 먼저 나간다.** 대시보드는 마켓 저장소의 이름·명령(`upplz@upplz`)을 그대로 안내하므로, 웹이 먼저 배포되면 두 호스트 모두 새 설치 명령이 실패한다. 순서는 ① 마켓 push(3) → ② 공개 저장소로 두 호스트 설치 확인(Claude Code `/plugin marketplace add jiwoonesoft/upplz` → `/plugin install upplz@upplz`, Codex `codex plugin marketplace add jiwoonesoft/upplz` → `codex plugin add upplz@upplz` — `owner/repo` 형식의 Codex 마켓 추가는 아직 미검증이라 여기서 처음 확인한다) → ③ 웹 배포 → ④ upplz 서버 재시작(서버가 바뀐 릴리스만 — 안내 문구만 바뀌었으면 ①~③ 과 순서가 무관하다). 마켓 이름이 바뀌는 릴리스면 ② 뒤에 「기존 사용자 이관」 절차를 기존 설치자에게 직접 알린다. 모두 사용자 지시가 있을 때만 한다.
 
-> Claude Code 의 `userConfig` 는 **설치 시점에만** 프롬프트된다. 업데이트만으로는 재입력되지 않으므로, 키 변경이 필요하면 재설치를 안내한다. Codex 는 `.env` 값만 바꾸면 된다.
+> Claude Code 의 `userConfig` 는 **설치 시점에만** 프롬프트된다. 업데이트만으로는 재입력되지 않으므로, 키 변경이 필요하면 재설치를 안내한다. Codex 는 `.env` 값만 바꾸고 Codex 를 재시작하면 된다(MCP 서버는 기동 때 로드된다).
 
 ## 기존 사용자 이관 (2026-10-12 이름 변경)
 
@@ -106,7 +107,7 @@ Claude Code 에 옛 이름으로 등록된 마켓은 **제거 후 재추가**한
 /plugin install upplz@upplz        # 키·엔드포인트를 다시 묻는다
 /reload-plugins
 ```
-`upplz-plugins` 주소는 GitHub 리다이렉트로 계속 닿지만 새 안내에는 쓰지 않는다.
+`upplz-plugins` 주소는 GitHub 리다이렉트로 계속 닿지만 새 안내에는 쓰지 않는다. 대시보드는 새 명령만 보여 주고 이 절차로 가는 단서가 없으므로, 이름이 바뀐 릴리스를 게시할 때 기존 설치자에게 이 절차를 직접 알린다(「버전 업데이트 배포」 5).
 
 ## ⚠️ MCP 엔드포인트 설정
 

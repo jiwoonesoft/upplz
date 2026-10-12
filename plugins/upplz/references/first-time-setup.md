@@ -1,8 +1,8 @@
 # 최초 셋업 — iOS / Android (first-time setup)
 
-이 문서는 `/upplz:init` 커맨드와 upload 계열 스킬(`upplz-upload-build-only`·`upplz-upload`)의 최초 셋업 게이트가 **공용 참조하는 단일 절차**다(D-8). 어느 쪽으로 들어와도 같은 단계를 같은 순서로 수행한다.
+이 문서는 `upplz-init`(Claude Code `/upplz:init` · Codex `$upplz-init`)과 upload 계열 스킬(`upplz-upload-build-only`·`upplz-upload`)의 최초 셋업 게이트가 **공용 참조하는 단일 절차**다(D-8). 어느 쪽으로 들어와도 같은 단계를 같은 순서로 수행한다.
 
-셋업 미완료로 판정되면 이 문서의 해당 플랫폼 절차를 수행한 뒤 **호출한 스킬의 Process(빌드 단계)로 복귀**한다(`/upplz:init`으로 들어왔다면 커맨드의 완료 확인 단계로 복귀).
+셋업 미완료로 판정되면 이 문서의 해당 플랫폼 절차를 수행한 뒤 **호출한 스킬의 Process(빌드 단계)로 복귀**한다(`upplz-init` 으로 들어왔다면 그 스킬의 §5 완료 확인으로 복귀).
 
 ## 한 장 요약 — 무엇이 어디에 있나
 
@@ -121,7 +121,7 @@ owner 가 아니면(`team.role: "collaborator"`) 1·2·3 모두 owner가 준비�
 8. `setup_match_repo({ matchRepoUrl?, forceNuke? })` — **owner 전용**(`OWNER_ONLY`). match 저장소 초기화 + 공용 Distribution 인증서(최초 1회만 발급, 이후 재사용) + 이 Bundle ID 의 첫 프로비저닝 프로파일을 준비하는 로컬 스크립트. **비밀번호는 ⑥에서 저장됐다** — 이 도구는 비밀번호를 받지 않고 저장값을 `env.MATCH_PASSWORD` 로 싣는다. 스크립트가 실행 전 **fastlane 설치·저장소 접근**을 점검(preflight)하고, clone 뒤 **match 초기화 여부**(match 가 쓰는 브랜치 — `MATCH_GIT_BRANCH`, 기본 `master` — 의 `match_version.txt`)로 새 저장소인지 기존 저장소인지 알려 주며, 실패 원인은 응답 `troubleshooting`(`fastlaneMissing`/`repoAccessDenied`/`passwordMismatch`/`certLimit`)으로 안내한다. 응답의 `matchPassword`는 정책 안내 객체(`policy`/`firstTime`/`existing`)이며 **값은 포함되지 않는다** — 값은 `env.MATCH_PASSWORD` 로만 온다.
    - **멱등 스킵**: `get_setup_status`의 `apple.matchInitialized: true`면 스크립트가 발급된 기록이 있다는 뜻이다(실행 성공을 보증하지 않는 약한 근거). 스크립트를 실제로 실행해 성공했는지 사용자에게 확인하고, 안 했으면 이 단계를 다시 수행한다(멱등).
 9. (필요할 때만) `add_provisioning_profile({ bundleId? })` — 활성 멤버 누구나. **다른 Bundle ID**(익스텐션·두 번째 앱)의 프로파일을 저장소에 추가한다(인증서는 ⑧ 결과를 재사용). 저장소가 **match 미초기화(match 브랜치에 `match_version.txt` 없음)면 스크립트가 `[match]` 오류로 멈춘다**(owner 가 ⑧을 아직 안 했다는 뜻 — 협업자가 read-write match 로 새 Distribution 인증서를 만들어 버리는 것을 막는다). ASC 앱 레코드는 필요 없다(프로파일은 Developer Portal 의 Bundle ID 로 만든다). match 는 멱등이라 같은 ID 로 다시 실행해도 안전하다. 접근 실패·비밀번호 불일치는 응답 `troubleshooting`(`repoAccessDenied`/`passwordMismatch`)을 참조한다.
-10. `get_setup_status`로 `setupComplete: true` 확인 → 호출한 스킬의 Process(iOS 빌드 단계)로 복귀(`/upplz:init`으로 들어왔다면 커맨드의 완료 확인 단계로). **`start_build` 응답에는 Apple API 키(.p8)가 들어 있지 않다** — buildScript 의 match 가 `--readonly` 라 저장소의 인증서·프로파일만 받고 Apple 을 치지 않는다. 응답 `env` 는 `MATCH_PASSWORD` 하나다. 첫 빌드 시 native-ios/flutter/react-native는 `projectType`을 반드시 명시한다(미지정 시 web-capacitor로 잘못 빌드됨. 빌드 대상이 모호하면 `scheme`/`xcodeProjectPath` 지정). 프로파일이 없어 match 가 실패하면 ⑨로 그 Bundle ID 의 프로파일을 추가한 뒤 다시 빌드한다.
+10. `get_setup_status`로 `setupComplete: true` 확인 → 호출한 스킬의 Process(iOS 빌드 단계)로 복귀(`upplz-init` 으로 들어왔다면 그 스킬의 §5 완료 확인으로). **`start_build` 응답에는 Apple API 키(.p8)가 들어 있지 않다** — buildScript 의 match 가 `--readonly` 라 저장소의 인증서·프로파일만 받고 Apple 을 치지 않는다. 응답 `env` 는 `MATCH_PASSWORD` 하나다. 첫 빌드 시 native-ios/flutter/react-native는 `projectType`을 반드시 명시한다(미지정 시 web-capacitor로 잘못 빌드됨. 빌드 대상이 모호하면 `scheme`/`xcodeProjectPath` 지정). 프로파일이 없어 match 가 실패하면 ⑨로 그 Bundle ID 의 프로파일을 추가한 뒤 다시 빌드한다.
 
 ## Android 최초 셋업 (맥 · 윈도)
 

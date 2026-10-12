@@ -21,7 +21,7 @@ description: 앱 스토어 메타데이터(설명·키워드·릴리스 노트·
 
 ### iOS
 
-> Key ID·Issuer ID·Team ID 는 `register_ios_credentials` 로 등록한 값을 서버가 스크립트에 넣는다(파라미터로 받지 않는다). `.p8` 는 프롤로그가 인증서 저장소의 `upplz/ios/AuthKey.p8.enc` 를 풀어 쓰고 종료 시 지운다 — 키 파일을 직접 준비하거나 어떤 도구로도 열어 읽지 않는다. 응답의 `securityNote`·`troubleshooting.keyFileNotFound` 문구를 **그대로 전달**한다(`[fetch]` 면 owner 가 `register_ios_credentials` 를 실행해야 한다).
+> Key ID·Issuer ID·Team ID 는 `register_ios_credentials` 로 등록한 값을 서버가 스크립트에 넣는다(파라미터로 받지 않는다). `.p8` 는 프롤로그가 인증서 저장소의 `upplz/ios/AuthKey.p8.enc` 를 풀어 쓰고 종료 시 지운다 — 키 파일을 직접 준비하지 않는다. **파일 본문을 어떤 도구로도 대화에 읽어 들이지 않는다** — 에이전트는 경로만 다룬다(본문을 출력하지 않는 `jq -r .client_email`·반환 스크립트의 `openssl pkey` 는 예외). 응답의 `securityNote`·`troubleshooting.keyFileNotFound` 문구를 **그대로 전달**한다(`[fetch]` 면 owner 가 `register_ios_credentials` 를 실행해야 한다).
 
 1. `pull_ios_metadata` — 현재 스토어 메타데이터를 로컬로 가져온다(`ios/fastlane/metadata/**`).
 2. 사용자가 로컬 파일 편집(설명/키워드/릴리스 노트/스크린샷 배치).

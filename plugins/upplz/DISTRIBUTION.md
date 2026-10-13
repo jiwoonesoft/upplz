@@ -10,7 +10,7 @@
 
 ```
 upplz/                               # 공개 git 저장소 (마켓플레이스) — github.com/jiwoonesoft/upplz
-├── README.md                        # 마켓 첫 화면 — 설치 블록은 plugin/README.md 「설치」와 같은 명령(손으로 맞춘다)
+├── README.md                        # 마켓 첫 화면 — 설치 5줄은 plugin/README.md 「설치」와 같고, 그 뒤 진입점 두 줄은 /upplz:init·$upplz:upplz-init(손으로 맞춘다)
 ├── DISTRIBUTION.md                  # plugins/upplz/DISTRIBUTION.md 의 동기화본(cp -p)
 ├── .claude-plugin/marketplace.json  # Claude Code 카탈로그(이름 upplz)
 ├── .agents/plugins/marketplace.json # Codex 카탈로그(이름 upplz)
@@ -95,7 +95,7 @@ codex plugin add upplz@upplz
 
 1. 본 저장소 `plugin/` 에서 변경 → 리뷰/머지.
 2. `plugin/.claude-plugin/plugin.json`·`plugin/.codex-plugin/plugin.json` 의 `version` 상향(같은 값 — `src/mcp/plugin-docs-drift.test.ts` 가 고정).
-3. 마켓 저장소(`jiwoonesoft/upplz`)의 로컬 클론(이하 `<클론>`)의 `plugins/upplz/` 에 동기화: `rsync -a --delete plugin/ <클론>/plugins/upplz/`(점 디렉토리 `.claude-plugin/`·`.codex-plugin/` 과 `docker/` 가 함께 간다 — 동기화 뒤 `ls -a <클론>/plugins/upplz` 로 확인). `<클론>/.claude-plugin/marketplace.json` 의 `version` 반영(Codex 카탈로그는 건드리지 않는다) → `diff -r plugin <클론>/plugins/upplz` 가 비어 있는지 확인 → 루트 두 파일: `README.md` 의 설치 블록·진입점 표기가 `plugin/README.md` 「설치」와 같은지 확인하고, `DISTRIBUTION.md` 는 `<클론>` 에서 `cp -p plugins/upplz/DISTRIBUTION.md DISTRIBUTION.md` 로 갱신 → `git -C <클론> grep -n '[$]upplz-init'` 가 0줄(옛 Codex 표기 — 루트 파일까지 클론 전체) → push(사용자 지시 시).
+3. 마켓 저장소(`jiwoonesoft/upplz`)의 로컬 클론(이하 `<클론>`)의 `plugins/upplz/` 에 동기화: `rsync -a --delete plugin/ <클론>/plugins/upplz/`(점 디렉토리 `.claude-plugin/`·`.codex-plugin/` 과 `docker/` 가 함께 간다 — 동기화 뒤 `ls -a <클론>/plugins/upplz` 로 확인). `<클론>/.claude-plugin/marketplace.json` 의 `version` 반영(Codex 카탈로그는 건드리지 않는다) → `diff -r plugin <클론>/plugins/upplz` 가 비어 있는지 확인 → 루트 두 파일: `README.md` 의 설치 5줄이 `plugin/README.md` 「설치」와 같고 그 뒤 진입점 두 줄이 `/upplz:init`·`$upplz:upplz-init`(「스킬」 첫 불릿과 같은 표기)인지 확인하고, `DISTRIBUTION.md` 는 `<클론>` 에서 `cp -p plugins/upplz/DISTRIBUTION.md DISTRIBUTION.md` 로 갱신 → `git -C <클론> grep -n --untracked '[$]upplz-init'` 가 0줄(옛 Codex 표기 — 루트 파일과 아직 `git add` 하지 않은 새 파일까지 클론 전체. `git grep` 은 기본으로 추적 중인 파일만 보므로 `--untracked` 를 빼면 안 된다) → push(사용자 지시 시).
 4. 고객 갱신: Claude Code `/plugin marketplace update upplz` 후 재설치/갱신, Codex `codex plugin marketplace upgrade upplz`(Git 마켓 스냅숏을 새로 받으면서 설치된 플러그인 캐시도 새 버전으로 바꾼다 — 재설치 불필요. 2026-10-12 실측은 https URL 을 git `insteadOf` 로 로컬 bare 저장소에 붙인 대역 Git 마켓에서 했고, 고객이 쓰는 `jiwoonesoft/upplz`(owner/repo) 마켓에서는 미검증이다). `upgrade` 뒤에도 `codex plugin list` 의 `upplz@upplz` 버전이 그대로면 `codex plugin remove upplz@upplz` → `codex plugin add upplz@upplz` 로 다시 설치한다. 로컬 경로로 추가한 마켓(아래 검증 체크리스트)은 `upgrade` 대상이 아니다(`is not configured as a Git marketplace`) — `codex plugin add upplz@upplz` 를 다시 실행하면 새 버전으로 교체된다.
 5. **게시 순서 — 마켓이 웹 안내보다 먼저 나간다.** 대시보드는 마켓 저장소의 이름·명령(`upplz@upplz`)을 그대로 안내하므로, 웹이 먼저 배포되면 두 호스트 모두 새 설치 명령이 실패한다. 순서는 ⓪ 마켓 저장소 이름 변경(`gh repo rename` — 저장소 이름이 바뀌는 릴리스만. 2026-10-12 의 `jiwoonesoft/upplz` 변경은 완료) → ① 마켓 push(3) → ② 공개 저장소로 두 호스트 설치 확인(Claude Code `/plugin marketplace add jiwoonesoft/upplz` → `/plugin install upplz@upplz`, Codex `codex plugin marketplace add jiwoonesoft/upplz` → `codex plugin add upplz@upplz` — `owner/repo` 형식의 Codex 마켓 추가는 아직 미검증이라 여기서 처음 확인한다) → ③ 웹 배포 → ④ upplz 서버 재시작(서버 코드가 바뀌지 않은 릴리스면 ④ 는 생략 — 서버 문구가 웹 화면을 가리키면 반드시 ③ 뒤). 서버 코드가 바뀐 릴리스는 `pnpm build` 를 ① 전에 끝내 두고(타입 오류면 게시를 시작하지 않는다 — 재시작 직전으로 미루지 않는다), 스키마까지 바뀌면 ③·④ 를 upplz 서버 저장소 CLAUDE.md 「배포 순서」 1~5 로 대신한다(그 1 의 build 는 이미 끝냈으므로 건너뛴다). 마켓 이름이 바뀌는 릴리스면 ② 뒤에 「기존 사용자 이관」 절차를 기존 설치자에게 직접 알린다. 모두 사용자 지시가 있을 때만 한다.
 
@@ -128,7 +128,7 @@ Claude Code 에 옛 이름으로 등록된 마켓은 **제거 후 재추가**한
 2. `codex plugin add upplz@upplz` → `find ~/.codex/plugins/cache -maxdepth 6 -name SKILL.md | grep upplz-init` 이 1건 이상, 같은 캐시(`~/.codex/plugins/cache/upplz/upplz/<버전>/`)에 `references/`·`docker/android/Dockerfile`·`.codex-plugin/plugin.json` 이 있고 `.codex-plugin/migrated-command-skills/` 는 **없다**(`commands/init.md` 의 `$ARGUMENTS` 가 Codex 의 커맨드→스킬 변환을 막는다 — 생기면 같은 절차의 스킬이 둘이 된다).
 3. `codex mcp add upplz --url http://127.0.0.1:3100/mcp --bearer-token-env-var UPPLZ_API_KEY` → `codex mcp get upplz` 에 `bearer_token_env_var` 가 찍힌다.
 4. 대시보드 「Codex」탭의 `.env` 기록 줄(`upplz-init` 스킬 §0 의 코드 블록과 같은 명령)을 가짜 키(`upplz_sk_dummy0000` 처럼)로 **두 번** 실행 → `grep -c '^UPPLZ_API_KEY=' ~/.codex/.env` 가 `1`, `stat -f %Lp ~/.codex/.env` 가 `600`, `~/.codex/.env.tmp` 가 없다(2026-10-13 실측 — umask 077 래핑으로 `.env.tmp` 도 생성 때부터 `600`). 이 항목은 실제 키를 덮어쓰므로 키가 든 `~/.codex/.env` 가 있는 머신이면 먼저 `cp -p ~/.codex/.env ~/.codex/.env.bak` 으로 사본을 떠 두고(`-p` 로 0600 을 유지한다 — 이미 있던 백업 파일에 덮어쓰면 기본 `cp` 는 그 파일의 옛 권한을 그대로 둔다) 끝에 `mv ~/.codex/.env.bak ~/.codex/.env` 로 되돌린다(없던 머신이면 `rm -f ~/.codex/.env`).
-5. `git -C <클론> grep -n '[$]upplz-init'` 가 0줄이다 — Codex 진입점 표기는 카탈로그 이름 `$upplz:upplz-init` 하나다(2026-10-13 결정 B). 루트 `README.md`·`DISTRIBUTION.md` 까지 클론 전체를 본다.
+5. `git -C <클론> grep -n --untracked '[$]upplz-init'` 가 0줄이다 — Codex 진입점 표기는 카탈로그 이름 `$upplz:upplz-init` 하나다(2026-10-13 결정 B). 루트 `README.md`·`DISTRIBUTION.md` 와 아직 add 하지 않은 새 파일까지 클론 전체를 본다(`[$]` 는 이 문서 자신의 이 줄이 grep 에 걸리지 않게 하는 표기다 — `\$` 로 바꾸지 않는다).
 6. 원복: `codex mcp remove upplz`, `codex plugin remove upplz@upplz`, `codex plugin marketplace remove upplz`.
 
 ## 서버 env 전제

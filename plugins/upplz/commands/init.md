@@ -14,7 +14,7 @@ allowed-tools 를 일부러 두지 않는다 — 기본값은 대화 세션의 �
 
 <!--
 이 파일은 Claude Code 전용 진입점이다. 절차 본문은 `skills/upplz-init/SKILL.md` 하나이고
-(Codex 는 `$upplz-init` 으로 같은 파일을 쓴다), 여기서는 그 파일을 읽어 수행하라고만 말한다.
+(Codex 는 `$upplz:upplz-init` 으로 같은 파일을 쓴다), 여기서는 그 파일을 읽어 수행하라고만 말한다.
 `${CLAUDE_PLUGIN_ROOT}` 는 커맨드에서만 쓴다 — Claude Code 는 커맨드 파일의 위치를 모델에
 알려 주지 않는 대신 이 변수를 치환해 주고, 스킬은 두 호스트 모두 SKILL.md 경로를 알려 준다.
 `$ARGUMENTS` 토큰은 **반드시 남겨 둔다** — Codex 는 commands/*.md 를 스킬로 자동 변환하는데

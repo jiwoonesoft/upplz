@@ -18,7 +18,7 @@ description: 테스트 목적으로 빌드만 만들어 스토어에 업로드�
 `<플러그인 루트>/references/routing.md`로 머신·대상 확정. iOS ∧ 비맥이면 iOS 맥 전용 게이트로 중단. Android 는 맥·윈도(Git Bash + Docker Desktop) 모두 같은 Process 다.
 
 ## 최초 셋업 게이트 (두 번째 단계, 필수)
-`<플러그인 루트>/references/first-time-setup.md`의 "셋업 완료 판정"으로 확인한다 — **iOS·Android 모두 `get_setup_status` 로 판정**하고(iOS 는 파라미터 없이, Android 는 `platform: "android"` — 패키지명을 알면 `packageName` 도 함께 넘겨 힌트의 owner 요청문에 실제 패키지명이 찍히게 한다. 선택이며 판정은 바뀌지 않는다), `setupComplete`면 Process로, 아니면 `nextStep`으로 분기한다(두 플랫폼이 같은 모양의 루프다). 미완료면 해당 플랫폼의 최초 셋업 절차를 수행한 뒤 아래 Process로 복귀한다(사용자가 `upplz-init`(Claude Code `/upplz:init` · Codex `$upplz-init`)을 아직 실행하지 않았다면 그것을 권하되, 요청하면 같은 절차를 여기서 그대로 수행한다 — 둘은 같은 문서를 쓴다). 진행 중 PRECONDITION/VERSION 계열 에러 코드가 오면 도구가 방어하는 것이므로, 지시대로 같은 문서의 해당 단계로 돌아간다(`get_setup_status` 를 같은 `platform` 으로 재호출해 복귀 지점을 잡는다).
+`<플러그인 루트>/references/first-time-setup.md`의 "셋업 완료 판정"으로 확인한다 — **iOS·Android 모두 `get_setup_status` 로 판정**하고(iOS 는 파라미터 없이, Android 는 `platform: "android"` — 패키지명을 알면 `packageName` 도 함께 넘겨 힌트의 owner 요청문에 실제 패키지명이 찍히게 한다. 선택이며 판정은 바뀌지 않는다), `setupComplete`면 Process로, 아니면 `nextStep`으로 분기한다(두 플랫폼이 같은 모양의 루프다). 미완료면 해당 플랫폼의 최초 셋업 절차를 수행한 뒤 아래 Process로 복귀한다(사용자가 `upplz-init`(Claude Code `/upplz:init` · Codex `$upplz:upplz-init`)을 아직 실행하지 않았다면 그것을 권하되, 요청하면 같은 절차를 여기서 그대로 수행한다 — 둘은 같은 문서를 쓴다). 진행 중 PRECONDITION/VERSION 계열 에러 코드가 오면 도구가 방어하는 것이므로, 지시대로 같은 문서의 해당 단계로 돌아간다(`get_setup_status` 를 같은 `platform` 으로 재호출해 복귀 지점을 잡는다).
 
 ## Process
 대상=iOS면 1–5(iOS)를, 대상=Android면 1'–5'(Android)를 따른다. **역할로 갈리지 않는다** — 협업자도 빌드부터 업로드·보고까지 전부 한다.

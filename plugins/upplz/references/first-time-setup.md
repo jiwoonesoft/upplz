@@ -1,6 +1,6 @@
 # 최초 셋업 — iOS / Android (first-time setup)
 
-이 문서는 `upplz-init`(Claude Code `/upplz:init` · Codex `$upplz-init`)과 upload 계열 스킬(`upplz-upload-build-only`·`upplz-upload`)의 최초 셋업 게이트가 **공용 참조하는 단일 절차**다(D-8). 어느 쪽으로 들어와도 같은 단계를 같은 순서로 수행한다.
+이 문서는 `upplz-init`(Claude Code `/upplz:init` · Codex `$upplz:upplz-init`)과 upload 계열 스킬(`upplz-upload-build-only`·`upplz-upload`)의 최초 셋업 게이트가 **공용 참조하는 단일 절차**다(D-8). 어느 쪽으로 들어와도 같은 단계를 같은 순서로 수행한다.
 
 셋업 미완료로 판정되면 이 문서의 해당 플랫폼 절차를 수행한 뒤 **호출한 스킬의 Process(빌드 단계)로 복귀**한다(`upplz-init` 으로 들어왔다면 그 스킬의 §5 완료 확인으로 복귀).
 

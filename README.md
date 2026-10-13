@@ -14,7 +14,7 @@
 # Codex — 스킬만 설치. MCP 는 대시보드 프로젝트 페이지 「Codex」탭의 명령 두 줄(~/.codex/.env + codex mcp add)로 연결 후 재시작
 codex plugin marketplace add jiwoonesoft/upplz
 codex plugin add upplz@upplz
-$upplz-init
+$upplz:upplz-init
 ```
 
 - **스킬**: `upplz-init`(배포 설정 원스톱)·`upplz-upload-build-only`(테스트 업로드)·`upplz-upload`(출시 업로드)·`upplz-metadata`·`upplz-icon`·`upplz-screenshot`.

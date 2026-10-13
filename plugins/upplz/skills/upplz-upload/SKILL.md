@@ -17,7 +17,7 @@ description: 출시 목적으로 스토어에 올릴 때 사용. 아이콘·스�
 `<플러그인 루트>/references/routing.md` 로드. iOS ∧ 비맥이면 iOS 맥 전용 게이트로 중단. Android 는 맥·윈도(Git Bash + Docker Desktop) 모두 같은 Process 다.
 
 ## 최초 셋업 게이트 (두 번째 단계, 필수)
-`<플러그인 루트>/references/first-time-setup.md`의 "셋업 완료 판정"으로 확인한다 — **iOS·Android 모두 `get_setup_status` 로 판정**하고(iOS 는 파라미터 없이, Android 는 `platform: "android"` — 패키지명을 알면 `packageName` 도 함께 넘겨 힌트의 owner 요청문에 실제 패키지명이 찍히게 한다. 선택이며 판정은 바뀌지 않는다), `setupComplete`면 Process로, 아니면 `nextStep`으로 분기한다(두 플랫폼이 같은 모양의 루프다). 미완료면 해당 플랫폼의 최초 셋업 절차를 수행한 뒤 아래 Process로 복귀한다(사용자가 `upplz-init`(Claude Code `/upplz:init` · Codex `$upplz-init`)을 아직 실행하지 않았다면 그것을 권하되, 요청하면 같은 절차를 여기서 그대로 수행한다 — 둘은 같은 문서를 쓴다).
+`<플러그인 루트>/references/first-time-setup.md`의 "셋업 완료 판정"으로 확인한다 — **iOS·Android 모두 `get_setup_status` 로 판정**하고(iOS 는 파라미터 없이, Android 는 `platform: "android"` — 패키지명을 알면 `packageName` 도 함께 넘겨 힌트의 owner 요청문에 실제 패키지명이 찍히게 한다. 선택이며 판정은 바뀌지 않는다), `setupComplete`면 Process로, 아니면 `nextStep`으로 분기한다(두 플랫폼이 같은 모양의 루프다). 미완료면 해당 플랫폼의 최초 셋업 절차를 수행한 뒤 아래 Process로 복귀한다(사용자가 `upplz-init`(Claude Code `/upplz:init` · Codex `$upplz:upplz-init`)을 아직 실행하지 않았다면 그것을 권하되, 요청하면 같은 절차를 여기서 그대로 수행한다 — 둘은 같은 문서를 쓴다).
 
 ## Process
 출시 목적이므로 **점검(1–3) 자체는 건너뛰지 않고 각 항목의 상태를 확인·보고**하되, 갱신 실행 여부는 사용자에게 물어본다(원치 않으면 skip). Android는 아이콘·스크린샷 자동 생성 도구가 없으므로(iOS 전용) 1–2는 상태 확인·안내만 한다. Android의 확인 대상: 아이콘은 `android/app/src/main/res/mipmap-*`, 스크린샷·스토어 이미지는 3단계 `pull_android_metadata` 결과(`android/fastlane/metadata/android/**/images`)로 확인한다.

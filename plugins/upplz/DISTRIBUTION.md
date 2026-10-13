@@ -1,6 +1,6 @@
 # upplz 플러그인 정식 배포 가이드
 
-고객에게 `upplz` 플러그인(현재 `2026.10.1`)을 배포하는 방법. **같은 디렉토리가 Claude Code 와 Codex 에 설치된다** — Claude Code 는 설치 한 번으로 스킬 + 커맨드 `/upplz:init` + 원격 MCP 연결 + 프로젝트 API 키가 함께 구성되고, Codex 는 스킬만 설치한 뒤 `$upplz-init` §0(또는 대시보드의 명령 두 줄)으로 MCP 를 연결한다.
+고객에게 `upplz` 플러그인(현재 `2026.10.1`)을 배포하는 방법. **같은 디렉토리가 Claude Code 와 Codex 에 설치된다** — Claude Code 는 설치 한 번으로 스킬 + 커맨드 `/upplz:init` + 원격 MCP 연결 + 프로젝트 API 키가 함께 구성되고, Codex 는 스킬만 설치한 뒤 `$upplz:upplz-init` §0(또는 대시보드의 명령 두 줄)으로 MCP 를 연결한다.
 
 ## 배포 채널: 공개 마켓 저장소 `jiwoonesoft/upplz`
 
@@ -81,7 +81,7 @@ upplz/                               # 공개 git 저장소 (마켓플레이스)
 codex plugin marketplace add jiwoonesoft/upplz
 codex plugin add upplz@upplz
 ```
-그 다음 대시보드 프로젝트 페이지 「Codex」탭의 명령 두 줄(① `~/.codex/.env` 에 `UPPLZ_API_KEY=` 기록 ② `codex mcp add upplz --url <엔드포인트>/mcp --bearer-token-env-var UPPLZ_API_KEY`)을 실행하고 **Codex 를 재시작**한 뒤, 배포할 앱의 저장소 디렉토리에서 `$upplz-init`. 사용자가 명령을 건너뛰었으면 `$upplz-init` §0 이 같은 절차를 안내한다.
+그 다음 대시보드 프로젝트 페이지 「Codex」탭의 명령 두 줄(① `~/.codex/.env` 에 `UPPLZ_API_KEY=` 기록 ② `codex mcp add upplz --url <엔드포인트>/mcp --bearer-token-env-var UPPLZ_API_KEY`)을 실행하고(첫 줄은 키가 셸 히스토리에 남는다 — 대시보드 안내 참조) **Codex 를 재시작**한 뒤, 배포할 앱의 저장소 디렉토리에서 `$upplz:upplz-init`. 사용자가 명령을 건너뛰었으면 `$upplz:upplz-init` §0 이 같은 절차를 안내한다.
 - Codex 에는 설치 때 값을 묻는 기능(`userConfig`)이 없고 `${user_config.*}` 치환도 없어 MCP 를 번들하지 않는다(설계 D1). 키는 Codex 가 기동 때 읽는 `~/.codex/.env` 에만 둔다 — 셸 export·config.toml 평문·플러그인 번들 모두 쓰지 않는다.
 
 ### 공통
@@ -125,7 +125,8 @@ Claude Code 에 옛 이름으로 등록된 마켓은 **제거 후 재추가**한
 1. `codex plugin marketplace add <클론 절대 경로>` → `codex plugin list` 에 `upplz@upplz` 가 보인다.
 2. `codex plugin add upplz@upplz` → `find ~/.codex/plugins/cache -maxdepth 6 -name SKILL.md | grep upplz-init` 이 1건 이상, 같은 캐시(`~/.codex/plugins/cache/upplz/upplz/<버전>/`)에 `references/`·`docker/android/Dockerfile`·`.codex-plugin/plugin.json` 이 있고 `.codex-plugin/migrated-command-skills/` 는 **없다**(`commands/init.md` 의 `$ARGUMENTS` 가 Codex 의 커맨드→스킬 변환을 막는다 — 생기면 같은 절차의 스킬이 둘이 된다).
 3. `codex mcp add upplz --url http://127.0.0.1:3100/mcp --bearer-token-env-var UPPLZ_API_KEY` → `codex mcp get upplz` 에 `bearer_token_env_var` 가 찍힌다.
-4. 원복: `codex mcp remove upplz`, `codex plugin remove upplz@upplz`, `codex plugin marketplace remove upplz`.
+4. 대시보드 「Codex」탭의 `.env` 기록 줄(`upplz-init` 스킬 §0 의 코드 블록과 같은 명령)을 가짜 키(`upplz_sk_dummy0000` 처럼)로 **두 번** 실행 → `grep -c '^UPPLZ_API_KEY=' ~/.codex/.env` 가 `1`, `stat -f %Lp ~/.codex/.env` 가 `600`, `~/.codex/.env.tmp` 가 없다(2026-10-13 실측 — umask 077 래핑으로 `.env.tmp` 도 생성 때부터 `600`). 이 항목은 실제 키를 덮어쓰므로 키가 든 `~/.codex/.env` 가 있는 머신이면 먼저 사본을 떠 두고 끝에 되돌린다(없던 머신이면 `rm -f ~/.codex/.env`).
+5. 원복: `codex mcp remove upplz`, `codex plugin remove upplz@upplz`, `codex plugin marketplace remove upplz`.
 
 ## 서버 env 전제
 

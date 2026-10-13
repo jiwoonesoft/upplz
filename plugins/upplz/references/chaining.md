@@ -4,7 +4,7 @@
 
 ## 연속 그래프
 
-- **`upplz-init`(배포 설정 — Claude Code `/upplz:init` · Codex `$upplz-init`) 완료 → 제안: 지금 이어서 테스트 빌드 올리기?(`upplz-upload-build-only`)**
+- **`upplz-init`(배포 설정 — Claude Code `/upplz:init` · Codex `$upplz:upplz-init`) 완료 → 제안: 지금 이어서 테스트 빌드 올리기?(`upplz-upload-build-only`)**
 
 - **upplz-upload-build-only** 완료 → 제안: 출시까지 진행?(upplz-upload — 메타·아이콘·스샷 점검 포함) / 테스터 추가?(add_testers — iOS 전용, report_build_result로 uploaded 보고가 끝난 빌드만) / 아이콘·스크린샷·메타데이터 개별 갱신?(upplz-icon·upplz-screenshot — iOS 전용 / upplz-metadata)
 - **upplz-upload** 완료 → 심사 제출 수동 안내 후 종료(풀 체인이므로 추가 제안 없음).

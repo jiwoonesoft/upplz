@@ -1,15 +1,15 @@
 ---
 name: upplz-init
-description: upplz 배포 설정을 처음부터 끝까지 안내·처리한다(프로젝트 키로 MCP 연결 후 1회). Claude Code 의 /upplz:init 과 같은 절차 — Codex 에서는 $upplz-init. upplz 도구가 보이지 않으면 §0 에서 MCP 연결부터 한다. 인자 ios|android. 협업자도 owner 전용 4단계를 뺀 전부를 끝까지 진행한다.
+description: upplz 배포 설정을 처음부터 끝까지 안내·처리한다(프로젝트 키로 MCP 연결 후 1회). Claude Code 의 /upplz:init 과 같은 절차 — Codex 에서는 $upplz:upplz-init. upplz 도구가 보이지 않으면 §0 에서 MCP 연결부터 한다. 인자 ios|android. 협업자도 owner 전용 4단계를 뺀 전부를 끝까지 진행한다.
 ---
 
 # upplz-init — 배포 설정 원스톱
 
 > 플러그인 루트 = 이 SKILL.md 가 있는 디렉토리의 두 단계 위다(`skills/upplz-init/SKILL.md`). 아래 `<플러그인 루트>/…` 는 그 경로다.
 
-사용자가 upplz 대시보드에서 **프로젝트를 만들고 그 프로젝트의 API 키로 MCP 연결을 마친 뒤** 실행하는 명시적 진입점이다. 이 스킬은 **서버 상태(`get_setup_status`)와 이 머신의 로컬 상태를 함께** 보고, 남은 설정을 끝까지 처리한다. Claude Code 에서는 `/upplz:init` 커맨드가 이 파일을 읽어 수행하고, Codex 에서는 `$upplz-init` 으로 직접 부른다.
+사용자가 upplz 대시보드에서 **프로젝트를 만들고 그 프로젝트의 API 키로 MCP 연결을 마친 뒤** 실행하는 명시적 진입점이다. 이 스킬은 **서버 상태(`get_setup_status`)와 이 머신의 로컬 상태를 함께** 보고, 남은 설정을 끝까지 처리한다. Claude Code 에서는 `/upplz:init` 커맨드가 이 파일을 읽어 수행하고, Codex 에서는 `$upplz:upplz-init` 으로 직접 부른다.
 
-**인자**: Claude Code 커맨드 경유면 `$ARGUMENTS`, Codex 면 `$upplz-init` 뒤에 적은 텍스트다. `android` 면 Android 경로를, `ios` 이거나 비어 있으면 iOS 경로를 기본으로 잡는다(비어 있으면 저장소 구조로 판정하고 사용자에게 확인).
+**인자**: Claude Code 커맨드 경유면 `$ARGUMENTS`, Codex 면 `$upplz:upplz-init` 뒤에 적은 텍스트다. `android` 면 Android 경로를, `ios` 이거나 비어 있으면 iOS 경로를 기본으로 잡는다(비어 있으면 저장소 구조로 판정하고 사용자에게 확인).
 
 > 절차의 **단일 출처는 `<플러그인 루트>/references/first-time-setup.md`** 다. 이 스킬은 그 문서를 실행하는 껍데기이며, 단계 내용을 여기에 다시 적지 않는다(upload 계열 스킬의 최초 셋업 게이트도 같은 문서를 쓴다).
 
@@ -27,11 +27,11 @@ Codex 플러그인은 MCP 서버를 번들하지 않는다(설치 때 값을 묻
 
    `cat` 으로 `.env` 를 열거나 `echo` 로 변수를 찍는 명령, `env`·`printenv`·`set` 처럼 환경 전체를 찍는 명령은 쓰지 않는다 — 키가 이 대화와 세션 기록에 남는다(Codex 는 `.env` 의 키를 에이전트가 실행하는 셸 명령의 환경에도 넘긴다).
    하나라도 아니면 1 로 간다. 둘 다 정상인데 이 세션에 도구가 없으면 등록 뒤 재시작하지 않은 것이 가장 흔하다 — 3 의 재시작 안내를 하고 멈춘다. 사용자가 이미 재시작했다고 하면 4 로 간다.
-1. 사용자에게 upplz 대시보드 **프로젝트 페이지**의 「Codex」탭을 열게 한다. 거기에 **실제 엔드포인트와 이 프로젝트의 키가 채워진 명령 두 줄**이 있다. **사용자가 터미널에서 직접 실행하는 것이 기본**이다 — 키가 이 대화에 들어오지 않는다. 다만 첫 줄은 키를 명령줄에 담고 있어 사용자의 셸 히스토리(zsh 는 `~/.zsh_history` 등)에 사본이 남는다는 것도 함께 알린다(대시보드도 그 줄 아래에 적어 둔다). 에이전트는 확인하려고 히스토리 파일을 열어 보지 않는다 — 열면 키가 이 대화에 들어온다.
+1. 사용자에게 upplz 대시보드 **프로젝트 페이지**의 「Codex」탭을 열게 한다. 거기에 **실제 엔드포인트와 이 프로젝트의 키가 채워진 명령 두 줄**이 있다. **사용자가 터미널에서 직접 실행하는 것이 기본**이다 — 키가 이 대화에 들어오지 않는다. 다만 첫 줄은 키를 명령줄에 담고 있어 사용자의 셸 히스토리(zsh 는 `~/.zsh_history`, Terminal.app 은 `~/.zsh_sessions/` 안의 사본도)에 사본이 남는다는 것도 함께 알린다(대시보드도 그 줄 아래에 적어 둔다). 에이전트는 확인하려고 히스토리 파일을 열어 보지 않는다 — 열면 키가 이 대화에 들어온다.
 2. 사용자가 대신 해 달라고 하면 키를 받기 **전에** "여기에 붙여 넣은 키는 이 Codex 대화 기록에 남습니다 — 「Codex」탭의 명령을 터미널에서 직접 실행하는 편이 안전합니다" 를 알린다. 그래도 원하면 엔드포인트와 키를 받아 아래 두 명령을 실행한다(`~/.codex` 는 작업 폴더 밖이라 샌드박스 밖 실행 승인이 필요하다 — routing.md 「Codex 샌드박스」). 받은 키는 `~/.codex/.env` 에만 쓴다 — 에이전트가 로그·요약·다른 파일·저장소에 옮겨 적지 않고, 실행 뒤 다시 언급하지 않는다.
 
    ```bash
-   mkdir -p ~/.codex && { grep -v '^UPPLZ_API_KEY=' ~/.codex/.env 2>/dev/null; printf 'UPPLZ_API_KEY=%s\n' '<프로젝트 키>'; } > ~/.codex/.env.tmp && mv ~/.codex/.env.tmp ~/.codex/.env && chmod 600 ~/.codex/.env
+   mkdir -p ~/.codex && (umask 077; { grep -v '^UPPLZ_API_KEY=' ~/.codex/.env 2>/dev/null; printf 'UPPLZ_API_KEY=%s\n' '<프로젝트 키>'; } > ~/.codex/.env.tmp) && mv ~/.codex/.env.tmp ~/.codex/.env && chmod 600 ~/.codex/.env
    ```
 
    ```bash
@@ -39,7 +39,7 @@ Codex 플러그인은 MCP 서버를 번들하지 않는다(설치 때 값을 묻
    ```
 
    첫 줄은 교체형이다(기존 `UPPLZ_API_KEY=` 줄을 지우고 다시 쓴다 — 재발급 때 줄이 쌓이지 않는다). 엔드포인트가 `https://YOUR-UPPLZ-ENDPOINT` 자리표시자면 실행하지 말고 대시보드 안내의 실제 주소를 받는다.
-3. "Codex 를 완전히 종료했다가 다시 시작한 뒤 `$upplz-init` 을 다시 실행하세요" 를 안내하고 **여기서 멈춘다**. MCP 서버는 Codex 기동 때 로드되므로 같은 세션에서는 도구가 나타나지 않는다.
+3. "Codex 를 완전히 종료했다가 다시 시작한 뒤 `$upplz:upplz-init` 을 다시 실행하세요" 를 안내하고 **여기서 멈춘다**. MCP 서버는 Codex 기동 때 로드되므로 같은 세션에서는 도구가 나타나지 않는다.
 4. 재시작 뒤에도 도구가 보이지 않거나 401 이면 `<플러그인 루트>/references/routing.md` 의 MCP 연결 게이트(Codex 갈래)를 따른다 — 1 로 돌아가 같은 명령을 되풀이하지 않는다.
 
 ### Claude Code 인 경우
@@ -128,7 +128,7 @@ owner 전용 도구는 **21개 중 4개**다(서버 `requireOwner` 가드 기준
    - 위 표에 없는데도 `OWNER_ONLY` 가 오면 표가 서버와 어긋난 것이다. 안내를 지어내지 말고 응답의 `message` 를 그대로 전달한다.
 3. **멈출 때**: 서버가 준 `nextStepHint`를 **그대로 전달한다** — 무엇을 누가 해야 하는지가 이미 그 문장에 들어 있다(문구를 다시 쓰지 말 것). 여기에 두 가지만 덧붙인다:
    - 지금까지 **이미 끝낸 준비**를 요약한다(owner 가 중복으로 하지 않도록).
-   - "owner 가 그 단계를 마치면 `/upplz:init`(Claude Code) 또는 `$upplz-init`(Codex) 을 다시 실행하세요" — 남은 단계부터 이어서 재개된다.
+   - "owner 가 그 단계를 마치면 `/upplz:init`(Claude Code) 또는 `$upplz:upplz-init`(Codex) 을 다시 실행하세요" — 남은 단계부터 이어서 재개된다.
    - owner 전용 도구를 호출해 `OWNER_ONLY`(`{ error, message }`)를 받았을 때도 같게 처리한다.
 4. **`setupComplete: true`로 끝나면** 빌드부터 업로드까지 이어 간다:
    > "이 프로젝트는 배포 준비가 끝났습니다. 이제 '배포하자' 로 빌드를 시작할 수 있습니다."
@@ -158,7 +158,7 @@ owner 전용 도구는 **21개 중 4개**다(서버 `requireOwner` 가드 기준
 
 값을 묻기 전에 **반드시 아래를 그대로 안내**한다:
 
-> `.p8` 키와 Play Service Account JSON 은 **파일의 절대 경로만** 알려 주세요(예: `/Users/me/Downloads/AuthKey_ABC123DEF4.p8`). 제가 파일을 열어 읽지 않고, 반환되는 스크립트가 이 머신에서 직접 암호화해 인증서 저장소에 넣습니다 — 키 본문은 대화 기록에도 upplz 서버에도 남지 않습니다.
+> `.p8` 키와 Play Service Account JSON 은 **파일의 절대 경로만** 알려 주세요(예: `/Users/me/Downloads/AuthKey_ABC123DEF4.p8`). 제가 파일 본문을 대화에 읽어 들이지 않고, 반환되는 스크립트가 이 머신에서 직접 암호화해 인증서 저장소에 넣습니다 — 키 본문은 대화 기록에도 upplz 서버에도 남지 않습니다.
 > Key ID·Issuer ID·Team ID·저장소 URL 은 비밀이 아니므로 여기에 입력해 주세요. **프로젝트 비밀번호**(최초 1회)는 도구에 넘겨야 하므로 대화 기록에 남습니다 — 비밀번호 관리자에도 함께 보관하세요.
 
 - `.p8`·SA JSON 파일: **파일 본문을 어떤 도구로도 대화에 읽어 들이지 않는다** — 에이전트는 경로만 다룬다(본문을 출력하지 않는 `jq -r .client_email`·반환 스크립트의 `openssl pkey` 는 예외). 경로에 한글 등 비 ASCII 문자가 있으면 도구가 거부하므로(스크립트에 그대로 들어가는 값이라 허용 문자를 좁혔다) 파일을 영문 경로로 옮겨 달라고 안내한다 — **사용자 이름이 한글이면 `~/Downloads` 도 한글 경로**이므로(윈도에 흔하다: `C:\Users\홍길동`) 윈도 Git Bash 는 `/c/upplz/`, 맥은 `/Users/Shared/upplz/` 같은 사용자 폴더 밖 영문 폴더를 예로 든다.

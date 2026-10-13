@@ -11,7 +11,7 @@
 /reload-plugins
 /upplz:init
 
-# Codex — 스킬만 설치. MCP 는 대시보드 프로젝트 페이지 「Codex」탭의 명령 두 줄(~/.codex/.env + codex mcp add)로 연결 후 재시작
+# Codex — 스킬만 설치. MCP 는 대시보드 프로젝트 페이지 「Codex」탭의 명령 두 줄(~/.codex/.env + codex mcp add)로 연결 후 재시작(첫 줄은 키가 셸 히스토리에 남는다 — 대시보드 안내 참조)
 codex plugin marketplace add jiwoonesoft/upplz
 codex plugin add upplz@upplz
 $upplz:upplz-init

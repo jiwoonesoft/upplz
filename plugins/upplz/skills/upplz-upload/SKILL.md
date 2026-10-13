@@ -27,7 +27,7 @@ description: 출시 목적으로 스토어에 올릴 때 사용. 아이콘·스�
 3. **메타데이터 점검** — iOS는 `pull_ios_metadata`, Android는 `pull_android_metadata({ packageName })`로 현재 스토어 값을 내려받아 설명·키워드·릴리스 노트를 확인. 갱신 필요 시 `upplz-metadata`(apply) 진행. 새 버전 출시라면 릴리스 노트 갱신을 권한다. 메타데이터 도구는 활성 멤버 누구나 호출한다(협업자 포함). 자격은 스크립트가 인증서 저장소에서 풀어 쓰므로 응답 `env.MATCH_PASSWORD` 만 export 한다 — Android 의 Play Service Account 가 미등록이면 `PRECONDITION_FAILED` 이므로 owner 에게 `register_android_credentials` 를 요청한다.
 4. **빌드→업로드→보고** — `upplz-upload-build-only`의 Process(iOS 1–5 / Android 1'–5')를 그대로 따른다(`repoUrl`(Android 는 `packageName` 도) 필요. 비밀값은 도구 응답 `env.MATCH_PASSWORD` 하나이며 iOS match·Android keystore·`.enc` 파일이 모두 이 값으로 열린다 — 새로 정하는 값이 아니다. 저장돼 있지 않으면 도구가 `PRECONDITION_FAILED` 로 멈추므로 owner 에게 등록을 요청한다. 역할로 갈리지 않는다). 아이콘/코드 변경이 있었다면 필수, 2–3만 갱신했고 코드·아이콘 변경이 없다면 빌드는 생략 가능(메타는 빌드와 독립).
 5. (iOS 선택) 테스터 추가 → `add_testers`(선행: 4의 report_build_result로 uploaded 보고 완료. 테스터 관리는 팀 키의 ASC 역할이 App Manager 이상이어야 한다).
-   - **자격 취급은 `upplz-upload-build-only` 의 스크립트 실행 규칙과 같다** — 응답 `env.MATCH_PASSWORD` 를 export 하고 스크립트를 통째로 실행하면 프롤로그가 저장소에서 `.p8` 를 풀어 쓴다. 키 파일을 직접 찾지 않는다. **파일 본문을 어떤 도구로도 대화에 읽어 들이지 않는다** — 에이전트는 경로만 다룬다(본문을 출력하지 않는 `jq -r .client_email`·반환 스크립트의 `openssl pkey` 는 예외).
+   - **자격 취급은 `upplz-upload-build-only` 의 스크립트 실행 규칙과 같다** — 응답 `env.MATCH_PASSWORD` 를 export 하고 스크립트를 통째로 실행한다. 키 파일을 직접 준비하지 않고, **파일 본문을 어떤 도구로도 대화에 읽어 들이지 않는다** — 스크립트가 저장소에서 `.p8` 를 풀어 쓰고 종료 시 지운다.
 6. **심사 제출 안내(수동)** — iOS: App Store Connect 웹 → 해당 버전 → Add for Review → Submit for Review. Android: Play Console 웹에서 트랙별 검토·출시. upplz 도구 범위 밖임을 안내한다.
 
 ## Verification

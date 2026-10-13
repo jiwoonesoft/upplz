@@ -28,7 +28,7 @@
 ```
 
 ### Codex
-플러그인은 스킬만 설치한다. MCP 연결은 `~/.codex/.env` 의 `UPPLZ_API_KEY` 와 `codex mcp add` 로 등록한다 — 대시보드 프로젝트 페이지 「Codex」탭이 실제 값이 들어간 명령 두 줄을 보여 주고, `$upplz:upplz-init` §0 도 같은 절차를 안내한다. 등록 뒤 Codex 를 재시작한다.
+플러그인은 스킬만 설치한다. MCP 연결은 `~/.codex/.env` 의 `UPPLZ_API_KEY` 와 `codex mcp add` 로 등록한다 — 대시보드 프로젝트 페이지 「Codex」탭이 실제 값이 들어간 명령 두 줄을 보여 주고(첫 줄은 키가 셸 히스토리에 남는다 — 대시보드 안내 참조), `$upplz:upplz-init` §0 도 같은 절차를 안내한다. 등록 뒤 Codex 를 재시작한다.
 
 ```
 codex plugin marketplace add jiwoonesoft/upplz

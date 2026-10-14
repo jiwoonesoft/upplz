@@ -3,7 +3,7 @@
 웹 게임/앱을 iOS·Android로 빌드·배포하는 upplz 워크플로우 스킬 모음(iOS 는 맥 로컬 빌드, Android 는 맥·윈도 로컬 Docker 하네스). **같은 디렉토리가 두 호스트에 설치된다** — Claude Code 는 `.claude-plugin/plugin.json`(스킬 + 커맨드 + 번들 MCP), Codex 는 `.codex-plugin/plugin.json`(스킬만)을 읽는다.
 
 ## 스킬
-- `upplz-init` — **배포 설정 원스톱**(Claude Code `/upplz:init` · Codex `$upplz:upplz-init`). upplz 도구가 보이지 않으면 §0 에서 MCP 연결부터 한다. 서버 셋업 상태(`get_setup_status`)와 이 머신의 로컬 상태를 함께 보고 남은 설정을 끝까지 처리한다. `.p8`·Play Service Account 는 **파일 경로만** 받아(본문을 읽지 않는다) 반환된 스크립트가 인증서 저장소에 암호화해 넣는다. 협업자는 owner 전용 4단계만 owner 에게 요청하고 빌드·업로드·메타데이터까지 진행한다. 절차는 `references/first-time-setup.md` 하나를 upload 계열 스킬과 공유한다.
+- `upplz-init` — **배포 설정 원스톱**(Claude Code `/upplz:init` · Codex `$upplz:upplz-init`, 인자 `ios|android|credentials`). upplz 도구가 보이지 않으면 §0 에서 MCP 연결부터 한다. 서버 셋업 상태(`get_setup_status`)와 이 머신의 로컬 상태를 함께 보고 남은 설정을 끝까지 처리한다. `.p8`·Play Service Account 는 **파일 경로만** 받아(본문을 읽지 않는다) 반환된 스크립트가 인증서 저장소에 암호화해 넣는다. 협업자는 owner 전용 단계만 owner 에게 요청하고 빌드·업로드·메타데이터까지 진행한다. 절차는 `references/first-time-setup.md` 하나를 upload 계열 스킬과 공유한다.
 - `upplz-upload-build-only` — 테스트용 순수 빌드→스토어 업로드(최초 배포 셋업 게이트 포함)
 - `upplz-upload` — 출시용: 메타데이터·아이콘·스크린샷 점검·갱신 + 빌드→업로드(풀 체인)
 - `upplz-metadata` — 스토어 메타데이터 pull/apply

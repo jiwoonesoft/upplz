@@ -1,6 +1,6 @@
 ---
-description: upplz 배포 설정을 처음부터 끝까지 안내·처리한다(프로젝트 키로 MCP 연결 후 1회). 협업자도 owner 전용 4단계를 뺀 전부를 끝까지 진행한다.
-argument-hint: "[ios|android]"
+description: upplz 배포 설정을 처음부터 끝까지 안내·처리한다(프로젝트 키로 MCP 연결 후 1회). 협업자도 owner 전용 단계를 뺀 전부를 끝까지 진행한다.
+argument-hint: "[ios|android|credentials]"
 ---
 
 <!--
@@ -24,4 +24,4 @@ allowed-tools 를 일부러 두지 않는다 — 기본값은 대화 세션의 �
 
 # `/upplz:init` — 배포 설정 원스톱
 
-`${CLAUDE_PLUGIN_ROOT}/skills/upplz-init/SKILL.md` 를 `Read` 로 읽고, 인자 `$ARGUMENTS`(`ios`|`android`|없음)를 그 문서의 「인자」로 삼아 **§0 부터 끝까지 그대로 수행**한다. 단계 내용을 여기에 다시 적지 않는다.
+`${CLAUDE_PLUGIN_ROOT}/skills/upplz-init/SKILL.md` 를 `Read` 로 읽고, 인자 `$ARGUMENTS`(`ios`|`android`|`credentials`|`credentials android`|없음)를 그 문서의 「인자」로 삼아 **§0 부터 끝까지 그대로 수행**한다. 단계 내용을 여기에 다시 적지 않는다.

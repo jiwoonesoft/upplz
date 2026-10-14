@@ -1,6 +1,6 @@
 ---
 name: upplz-init
-description: upplz 배포 설정을 처음부터 끝까지 안내·처리한다(프로젝트 키로 MCP 연결 후 1회). Claude Code 의 /upplz:init 과 같은 절차 — Codex 에서는 $upplz:upplz-init. upplz 도구가 보이지 않으면 §0 에서 MCP 연결부터 한다. 인자 ios|android. 협업자도 owner 전용 4단계를 뺀 전부를 끝까지 진행한다.
+description: upplz 배포 설정을 처음부터 끝까지 안내·처리한다(프로젝트 키로 MCP 연결 후 1회). Claude Code 의 /upplz:init 과 같은 절차 — Codex 에서는 $upplz:upplz-init. upplz 도구가 보이지 않으면 §0 에서 MCP 연결부터 한다. 인자 ios|android|credentials(owner 의 계정당 1회 등록 — 앱 저장소 불필요). 협업자도 owner 전용 단계를 뺀 전부를 끝까지 진행한다.
 ---
 
 # upplz-init — 배포 설정 원스톱
@@ -9,7 +9,7 @@ description: upplz 배포 설정을 처음부터 끝까지 안내·처리한다(
 
 사용자가 upplz 대시보드에서 **프로젝트를 만들고 그 프로젝트의 API 키로 MCP 연결을 마친 뒤** 실행하는 명시적 진입점이다. 이 스킬은 **서버 상태(`get_setup_status`)와 이 머신의 로컬 상태를 함께** 보고, 남은 설정을 끝까지 처리한다. Claude Code 에서는 `/upplz:init` 커맨드가 이 파일을 읽어 수행하고, Codex 에서는 `$upplz:upplz-init` 으로 직접 부른다.
 
-**인자**: Claude Code 커맨드 경유면 `$ARGUMENTS`, Codex 면 `$upplz:upplz-init` 뒤에 적은 텍스트다. `android` 면 Android 경로를, `ios` 이거나 비어 있으면 iOS 경로를 기본으로 잡는다(비어 있으면 저장소 구조로 판정하고 사용자에게 확인).
+**인자**: Claude Code 커맨드 경유면 `$ARGUMENTS`, Codex 면 `$upplz:upplz-init` 뒤에 적은 텍스트다. `android` 면 Android 경로를, `ios` 이거나 비어 있으면 iOS 경로를 기본으로 잡는다(비어 있으면 저장소 구조로 판정하고 사용자에게 확인). `credentials`(단독 또는 `credentials android`)면 아래 「`credentials` 모드」로 간다 — owner 가 앱 저장소 없이 Apple 키·저장소·비밀번호를 등록하는 경로다.
 
 > 절차의 **단일 출처는 `<플러그인 루트>/references/first-time-setup.md`** 다. 이 스킬은 그 문서를 실행하는 껍데기이며, 단계 내용을 여기에 다시 적지 않는다(upload 계열 스킬의 최초 셋업 게이트도 같은 문서를 쓴다).
 
@@ -50,6 +50,17 @@ Codex 플러그인은 MCP 서버를 번들하지 않는다(설치 때 값을 묻
 
 다른 MCP 클라이언트다. Codex 갈래의 두 값(엔드포인트 `/mcp`, `Authorization: Bearer <키>` 헤더)을 그 클라이언트의 MCP 설정 형식으로 옮겨 적도록 안내만 하고 멈춘다(워크플로우 스킬은 Claude Code·Codex 를 대상으로 쓴 것이라 그 밖의 클라이언트에서는 실행하지 않는다).
 
+## 0-1. `credentials` 모드 — owner 의 계정당 1회 등록(앱 저장소 불필요)
+
+퍼블리셔 owner 가 **앱 코드 없이** Apple 팀 키(.p8)·인증서 저장소·프로젝트 비밀번호(Android 면 Play Service Account)를 **현재 키의 프로젝트**에 등록한다. 이후 프로젝트는 대시보드 생성 폼의 「공유 자산 가져오기」로 이 등록을 물려받는다(협업자는 자기 프로젝트에서 `upplz-init` 만 돌린다).
+
+1. §0 으로 MCP 연결을 확인한다. §1 의 머신 판정은 한다(iOS 등록 스크립트는 맥 필요) — 저장소 구조 판정은 하지 않는다.
+2. `get_setup_status`(인자가 `credentials android` 면 `{ platform: "android" }`)를 호출한다. `team.role !== "owner"` 면 "이 모드는 owner 전용입니다 — 협업자는 `upplz-init` 을 그대로 실행하세요" 라고 알리고 **끝낸다**.
+3. §2 로컬 점검 중 **fastlane·openssl**(Android 면 node)만 확인·설치한다 — 스캐폴드·패키지명·미push 항목과 first-time-setup.md ①~⑤ 는 건너뛴다.
+4. first-time-setup.md 「§0 사전 확인 질문」을 한 뒤 §4 「값 수집」대로 ⑥ `register_ios_credentials` 를 실행한다(`credentials android` 면 `register_android_credentials`, 둘 다 쓰는 계정이면 둘 다). `apple.credentials: true` 면 ⑥ 은 건너뛴다(키 교체가 목적일 때만 다시).
+5. 사용자가 **Bundle ID 와 앱 이름을 주면** ⑦ `register_bundle_id` → ⑧ `setup_match_repo` 까지 이어서 한다(ASC 앱 레코드 생성은 ⑦ 힌트대로 안내만). 주지 않으면 이렇게 끝낸다: "첫 앱의 Bundle ID 가 정해지면 `upplz-init credentials` 를 다시 실행하거나, 그 앱 프로젝트에서 `register_bundle_id` → `setup_match_repo` 를 하세요. 다음 프로젝트부터는 생성 폼의 「공유 자산 가져오기」로 이 등록을 물려받습니다."
+6. §5 완료 확인·§6 한계·§7 제안은 하지 않는다 — 이 모드의 끝은 등록이다.
+
 ## 1. 라우팅·연결 게이트
 
 1. `<플러그인 루트>/references/routing.md` 를 읽어 **머신(맥/윈도) × 대상(iOS/Android)**을 확정한다. 게이트에 걸리면(iOS ∧ 비맥) 그 문서의 안내로 **중단**한다. 윈도에서는 Android 만 진행한다(Git Bash + Docker Desktop).
@@ -63,7 +74,7 @@ Codex 플러그인은 MCP 서버를 번들하지 않는다(설치 때 값을 묻
 1. **서버 상태**: 인자가 `android` 면 `get_setup_status({ platform: "android" })`, 아니면 **파라미터 없이** 호출한다(미지정 = `ios`). `team.role`·`nextStep`·`nextStepHint`·`setupComplete`·`apple.*` 와 `ios`·`android` 블록을 받는다.
    - **최상위 `nextStep`·`nextStepHint`·`setupComplete` 는 `platform` 이 고른 블록의 값**이고, `ios{…}`·`android{…}` 두 블록은 `platform` 과 무관하게 **항상 함께** 온다. **서버는 이 프로젝트가 어느 플랫폼인지 추정하지 않는다** — 1단계에서 확정한 대상을 그대로 넘긴다.
    - **iOS+Android 프로젝트는 지금 작업하는 플랫폼으로 호출**하고, 다른 쪽은 같은 응답의 `ios`/`android` 블록으로 본다(두 번 호출할 필요가 없다).
-   - **서버는 Apple·Google 을 조회하지 않는다** — 판정은 DB 기록(시크릿 존재·audit·빌드)만 본다. 앱 레코드·프로비저닝 프로파일·저장소 안 파일의 실존은 판정에 없고, 없으면 스크립트 실행 중에 드러난다.
+   - **서버는 Apple·Google 을 조회하지 않는다** — 판정은 DB 기록(시크릿 존재·audit·빌드)만 본다. 앱 레코드·프로비저닝 프로파일의 Apple 쪽 실존(발급 기록은 본다)·저장소 안 파일의 실존은 판정에 없고, 없으면 스크립트 실행 중에 드러난다.
    - **Android 는 패키지명을 알게 된 순간부터 `packageName` 도 함께 넘긴다** — `get_setup_status({ platform: "android", packageName })`. 선택 파라미터이고 **판정은 바뀌지 않는다.** 대신 `nextStepHint` 의 요청문에 `setup_android_keystore({ packageName: "com.example.app" })` 처럼 **실제 패키지명이 찍혀**, 협업자가 owner 에게 그 문장을 그대로 전달하면 owner 가 되묻지 않는다. 첫 호출에서는 아직 모를 수 있다 — **그때는 넘기지 않고**(자리표시자가 나간다) 2-2 나 first-time-setup.md Android 3 에서 값을 확인한 뒤의 **재호출부터** 넘긴다. 사용자에게 억지로 묻지 않는다.
    - 대상이 확실하지 않으면 **사용자에게 "이 앱을 App Store 에도 올릴 계획인가요?" 로 한 번 확인**한다(Apple Developer Program 은 연 $99이므로 추측으로 Apple 크레덴셜 등록을 시키지 않는다). Android 만 할 계획이면 `platform: "android"` 로 호출하면 되고, 그러면 최상위 판정에 Apple 상태가 섞이지 않는다.
 2. **로컬 상태**: 셸에서 아래를 실행해 확인한다(값만 읽고 판단은 first-time-setup.md에 맡긴다).
@@ -108,16 +119,19 @@ Codex 플러그인은 MCP 서버를 번들하지 않는다(설치 때 값을 묻
 
 **할 수 있는 것은 끝까지 하고, owner 전용 단계에서만 멈춘다.** "협업자니까" 를 이유로 조기 종료하지 않는다.
 
-owner 전용 도구는 **21개 중 4개**다(서버 `requireOwner` 가드 기준 — `grep -rn 'requireOwner' src/mcp/tools/` 와 1:1로 맞춘 목록이다). 넷 다 **공유 자산을 만들거나 바꾸는** 도구다. 도구 하나가 한 행이다:
+owner 전용 도구는 **21개 중 3개**다(서버 `requireOwner` 가드 기준 — `grep -rn 'requireOwner' src/mcp/tools/` 와 1:1로 맞춘 목록이다). 3종 모두 **공유 자산을 만들거나 바꾸는** 도구다. 도구 하나가 한 행이다:
 
 | 도구 | 단계 | 이유 |
 |---|---|---|
 | `register_ios_credentials` | ⑥ Apple 크레덴셜 등록 | Apple 팀 키(.p8)를 인증서 저장소에 넣고 프로젝트 비밀번호를 정한다 |
 | `setup_match_repo` | ⑧ 인증서 저장소 초기화(iOS) | 인증서 발급·`forceNuke` 가 프로젝트 전체의 코드서명 자산을 바꾼다 |
-| `setup_android_keystore` | Android 5 | keystore 는 인증서 저장소에 사는 프로젝트 공유 자산 |
 | `register_android_credentials` | Android 6 | Play Service Account 를 인증서 저장소에 넣는다 |
 
+**`setup_android_keystore` 는 조건부다(D3)** — 저장소 URL·프로젝트 비밀번호가 이미 저장된 프로젝트(`android.certRepoUrl: true` ∧ `apple.matchPasswordStored: true`)에서는 협업자도 `setup_android_keystore({ packageName })` 로 자기 앱의 keystore 를 준비한다(기존 파일은 덮어쓰지 않는다). 그 둘이 없거나 `matchRepoUrl`·`matchPassword` 를 넘기면 `OWNER_ONLY` 다 — `nextStepHint` 가 어느 쪽인지 이미 구분해 말한다.
+
 **이 표에 없는 도구는 협업자도 호출한다** — `analyze_repository`·`get_setup_status`·`setup_project`·`register_bundle_id`·`add_provisioning_profile`·`start_build`·`get_build_status`·`report_build_result`·`upload_to_store`·`add_testers`·`apply_ios_metadata`·`pull_ios_metadata`·`apply_android_metadata`·`pull_android_metadata`·`generate_app_icon`·`generate_ios_screenshots`·`generate_native_screenshots`. 막혀 있다고 가정하지 말 것.
+
+`apple.matchInitInherited: true` 면 owner 가 다른 프로젝트의 공유 자산을 가져온 프로젝트다 — ⑥·⑧ 은 끝난 것으로 보고 ⑦ → ⑨ 로 간다.
 
 진행 방법:
 
@@ -125,7 +139,9 @@ owner 전용 도구는 **21개 중 4개**다(서버 `requireOwner` 가드 기준
 2. **`nextStep` 루프를 owner 와 똑같이 돈다** — 단계를 하나 끝낼 때마다 `get_setup_status`를 다시 호출해 다음 `nextStep`을 받는다. 막힐 때까지 계속 진행한다.
    - `register_bundle_id`(⑦) / `start_build`(빌드) → **직접 수행한다.** ⑦ 다음의 ASC 웹 앱 레코드 생성(수동)은 **owner 의 App Store Connect 팀에 앱을 만들 수 있는 역할(App Manager 이상)로 초대돼 있어야** 한다 — 초대가 없으면 owner 에게 앱 레코드 생성만 요청하고 그동안 다음 단계로 간다(앱 레코드는 업로드 전에만 있으면 된다).
    - `register_ios_credentials`(⑥) / `setup_match_repo`(⑧) → **owner 전용이라 여기서 멈춘다.** 3을 따른다.
-   - 위 표에 없는데도 `OWNER_ONLY` 가 오면 표가 서버와 어긋난 것이다. 안내를 지어내지 말고 응답의 `message` 를 그대로 전달한다.
+   - `add_provisioning_profile`(⑨) → **직접 수행한다**(상속 프로젝트·Bundle ID 를 바꾼 프로젝트에서 나온다 — ⑧ 을 owner 에게 요청하지 않는다).
+   - `setup_android_keystore` → `android.certRepoUrl` ∧ `apple.matchPasswordStored` 면 **직접 수행**, 아니면 owner 요청(힌트가 구분한다 — D3).
+   - 위 표·조건부 설명(`setup_android_keystore`)에 없는데도 `OWNER_ONLY` 가 오면 표가 서버와 어긋난 것이다. 안내를 지어내지 말고 응답의 `message` 를 그대로 전달한다.
 3. **멈출 때**: 서버가 준 `nextStepHint`를 **그대로 전달한다** — 무엇을 누가 해야 하는지가 이미 그 문장에 들어 있다(문구를 다시 쓰지 말 것). 여기에 두 가지만 덧붙인다:
    - 지금까지 **이미 끝낸 준비**를 요약한다(owner 가 중복으로 하지 않도록).
    - "owner 가 그 단계를 마치면 `/upplz:init`(Claude Code) 또는 `$upplz:upplz-init`(Codex) 을 다시 실행하세요" — 남은 단계부터 이어서 재개된다.
@@ -137,12 +153,12 @@ owner 전용 도구는 **21개 중 4개**다(서버 `requireOwner` 가드 기준
    - 스크립트가 `[fetch] 인증서 저장소에 … 가 없습니다` 로 멈추면 owner 가 그 메시지가 지목한 등록 도구를 아직 실행하지 않은 것이다 — 문구를 그대로 전달해 owner 에게 요청한다.
    - `[decrypt]` 로 멈추면 먼저 응답의 `env.MATCH_PASSWORD` 를 **그대로** export 했는지 확인하고 다시 실행한다(셸에 남은 다른 값이 흔한 원인이다 — 값을 추측해 바꾸지 않는다). 그래도 멈추면 응답 `troubleshooting.passwordMismatch` 를 그대로 전달한다 — owner 가 그 파일의 등록 도구(`.p8` → `register_ios_credentials`, Play SA → `register_android_credentials`)를 다시 실행해야 하고, 같은 인증서 저장소를 다른 upplz 프로젝트도 쓰면 재실행 대신 대시보드 '다른 프로젝트에서 복사' 로 비밀번호를 맞춘다.
 7. **Android 의 역할 분기**: iOS 와 같다 — 조건은 인증서 저장소(owner 소유 private GitHub)의 **collaborator** + **활성 멤버십** 두 가지이고, 협업자도 업로드·스토어 메타데이터까지 한다. keystore 는 그 저장소의 `android/<packageName>.keystore` 에, Play Service Account 는 같은 저장소의 `upplz/android/service-account.json.enc` 에 있으므로 협업자 로컬에 둘 파일은 없다.
-   - 인증서 저장소에 keystore 가 없으면 `start_build` 의 buildScript 가 멈추고 "owner 가 `setup_android_keystore` 를 실행해야 한다"고 알려 준다 — **그 문구를 그대로 전달**한다.
+   - 인증서 저장소에 keystore 가 없으면 `start_build` 의 buildScript 가 멈추고 "owner 가 `setup_android_keystore` 를 실행해야 한다"고 알려 준다 — **그 문구를 그대로 전달**한다(URL·비밀번호가 저장된 프로젝트면 협업자 본인이 실행한다 — D3).
    - Play Service Account 가 미등록이면 `upload_to_store`·`apply_android_metadata`·`pull_android_metadata` 가 `PRECONDITION_FAILED` 로 막는다 — owner 에게 `register_android_credentials` 실행을 요청하고 그 단계만 대기한다.
    - 저장소 접근이 거부되면(clone 실패) owner 에게 **GitHub collaborator 추가**를 요청한다. upplz 는 이 권한을 부여할 수도 확인할 수도 없다.
-   - **owner 에게 요청할 때는 한 번에 묶는다.** Android 의 owner 전용 단계는 둘이고 GitHub 권한까지 셋인데, 하나씩 요청하면 빌드에서 막히고 업로드에서 또 막혀 왕복이 그만큼 늘어난다. 요청문에 **① `setup_android_keystore({ packageName })` ② `register_android_credentials({ serviceAccountPath, clientEmail })` ③ 인증서 저장소에 나를 GitHub collaborator 로 추가** 를 함께 적는다. 그동안 로컬 선행 단계(Android 1–4)를 마쳐 둔다. owner 가 끝내면 **첫 빌드부터 재개**한다.
+   - **owner 에게 요청할 때는 한 번에 묶는다.** Android 의 owner 요청 단계는 최대 둘이고(keystore 는 URL·비밀번호가 없을 때만) GitHub 권한까지 셋인데, 하나씩 요청하면 빌드에서 막히고 업로드에서 또 막혀 왕복이 그만큼 늘어난다. 요청문에 **① `setup_android_keystore({ packageName })` ② `register_android_credentials({ serviceAccountPath, clientEmail })` ③ 인증서 저장소에 나를 GitHub collaborator 로 추가** 를 함께 적는다. 그동안 로컬 선행 단계(Android 1–4)를 마쳐 둔다. owner 가 끝내면 **첫 빌드부터 재개**한다.
    - **keystore 비밀번호를 따로 정하지 않는다.** keystore 비밀번호는 프로젝트 비밀번호와 **같은 값**이고, `start_build` 응답 `env.MATCH_PASSWORD` 로 자동 전달된다.
-   - **Android 도 iOS 와 같은 `nextStep` 루프(위 2)를 돈다** — `get_setup_status({ platform: "android", packageName })` 로 호출하면 최상위 `nextStep`·`nextStepHint`·`setupComplete` 가 Android 것으로 온다(`packageName` 은 선택 — 알면 넘겨서 요청문에 패키지명이 찍히게 하고, 모르면 생략한다). `setup_android_keystore`·`register_android_credentials` 에서 멈추면 **3 을 따른다** — 서버 힌트가 이미 **둘을 한 번에 요청하라**고 말하므로 문구를 다시 쓰지 말고 그대로 전달한다.
+   - **Android 도 iOS 와 같은 `nextStep` 루프(위 2)를 돈다** — `get_setup_status({ platform: "android", packageName })` 로 호출하면 최상위 `nextStep`·`nextStepHint`·`setupComplete` 가 Android 것으로 온다(`packageName` 은 선택 — 알면 넘겨서 요청문에 패키지명이 찍히게 하고, 모르면 생략한다). `setup_android_keystore`·`register_android_credentials` 에서 멈추면 **3 을 따른다** — 서버 힌트가 이미 **둘을 한 번에 요청하라**고 말하므로 문구를 다시 쓰지 말고 그대로 전달한다. 단 `setup_android_keystore` 힌트가 **직접형**(D3 — 저장소 URL·비밀번호가 저장된 프로젝트의 협업자)이면 요청이 아니라 본인이 실행한다.
 
 ### owner (`team.role: "owner"`)
 
@@ -168,7 +184,7 @@ owner 전용 도구는 **21개 중 4개**다(서버 `requireOwner` 가드 기준
 ### 저장
 
 - **iOS 크레덴셜**: `register_ios_credentials({ authKeyPath, keyId, issuerId, teamId, matchRepoUrl?, matchPassword? })` — **owner 전용**. `matchRepoUrl` 은 프로젝트에 아직 없을 때만(최초 등록) 넘긴다 — 키 교체·Android 를 먼저 설정한 프로젝트는 빼면 저장값이 쓰인다. 식별자는 프로젝트에 저장하고, 응답의 `script` 를 `env.MATCH_PASSWORD` 와 함께 실행하면 `.p8` 가 인증서 저장소의 `upplz/ios/AuthKey.p8.enc` 로 암호화돼 push 된다. **프로젝트에 비밀번호가 아직 없으면 `matchPassword` 는 필수**다(없으면 `PRECONDITION_FAILED`). 키 교체도 같은 도구를 다시 실행한다 — 응답 `replaced: true`(저장돼 있던 Key ID 가 이번 값과 다를 때만)와 `previousKeyId` 가 오면 옛 키를 App Store Connect 에서 Revoke 하라고 안내한다. 같은 Key ID 로 다시 실행하면 `replaced: false` 다(기존 프로젝트 이관 등).
-- **Android keystore**: `setup_android_keystore({ packageName, matchRepoUrl?, matchPassword? })` — **owner 전용**. keystore 를 인증서 저장소에 준비하는 스크립트를 받는다. keystore 비밀번호는 프로젝트 비밀번호와 **같은 값**이다. **Android 전용 프로젝트의 첫 셋업**(저장소 URL·프로젝트 비밀번호가 아직 없음)이면 `matchRepoUrl`·`matchPassword` 를 함께 넘겨 셋을 한 번에 준비한다 — Play Service Account 없이도 첫 AAB 를 만들 수 있다. 이미 저장돼 있으면 둘 다 뺀다(비밀번호 없이 부르면 `PRECONDITION_FAILED`, 저장값과 다르면 거부).
+- **Android keystore**: `setup_android_keystore({ packageName, matchRepoUrl?, matchPassword? })` — owner, 또는 URL·비밀번호가 저장된 프로젝트의 협업자(D3). keystore 를 인증서 저장소에 준비하는 스크립트를 받는다. keystore 비밀번호는 프로젝트 비밀번호와 **같은 값**이다. **Android 전용 프로젝트의 첫 셋업**(저장소 URL·프로젝트 비밀번호가 아직 없음)이면 `matchRepoUrl`·`matchPassword` 를 함께 넘겨 셋을 한 번에 준비한다 — Play Service Account 없이도 첫 AAB 를 만들 수 있다. 이미 저장돼 있으면 둘 다 뺀다(비밀번호 없이 부르면 `PRECONDITION_FAILED`, 저장값과 다르면 거부).
 - **Android Play 크레덴셜**: `register_android_credentials({ serviceAccountPath, clientEmail, matchRepoUrl?, matchPassword? })` — **owner 전용**(`matchRepoUrl`·`matchPassword` 는 아직 없을 때만 — keystore 를 먼저 준비했다면 뺀다). `client_email` 은 프로젝트에 저장하고(이 값의 존재가 "SA 등록됨" 이다), 응답의 `script` 가 키 파일을 `upplz/android/service-account.json.enc` 로 암호화해 push 한다. 교체 시 스크립트가 옛 `private_key_id` 를 출력하므로 Google Cloud 에서 그 키를 삭제하라고 안내한다. SA 는 새면 Google Cloud 에서 키를 회전하는 것 말고는 수습할 길이 없다.
 - 입력 형식 오류는 `INVALID_INPUT`의 `errors`(필드별 안내)로 돌아온다 — 해당 값만 다시 받아 재호출한다.
 - 등록 스크립트를 같은 파일로 두 번 실행하면 두 번째는 `[done] 변경 없음` 으로 끝난다(커밋·push 없음) — 실패가 아니다.
@@ -181,14 +197,15 @@ owner 전용 도구는 **21개 중 4개**다(서버 `requireOwner` 가드 기준
 3. **iOS+Android 프로젝트**: 한 번의 호출로 둘 다 본다 — 최상위는 `platform` 이 고른 쪽이고, 다른 쪽은 응답의 `ios`/`android` 블록에 있다.
 4. 종료 안내:
    > "배포 설정이 끝났습니다. 이제 '배포하자' 또는 '테스트 빌드 올려줘' 로 빌드를 시작할 수 있습니다."
-   > "다른 프로젝트가 있으면 대시보드 프로젝트 페이지의 **'다른 프로젝트에서 복사'** 로 식별자와 비밀번호를 옮길 수 있습니다(같은 인증서 저장소를 쓸 때)."
+   > "다른 프로젝트가 있으면 대시보드 **프로젝트 생성 폼의 '공유 자산 가져오기'**(또는 프로젝트 페이지의 '다른 프로젝트에서 복사')로 식별자·비밀번호·저장소 초기화 기록을 옮길 수 있습니다."
 
 ## 6. 알려진 한계 (1회 안내)
 
 - **API 키는 설치당 1개다.** 키 하나가 프로젝트 하나에 묶이므로, 다른 프로젝트를 배포하려면 **그 프로젝트의 키로 바꿔 끼워야** 한다 — Claude Code 는 `/plugin` → upplz 설정에서, Codex 는 `~/.codex/.env` 의 `UPPLZ_API_KEY` 값을 바꾸고 재시작한다. 여러 프로젝트를 동시에 연결할 수는 없다.
 - **협업자는 인증서 저장소의 GitHub collaborator 여야 한다(iOS·Android 공통).** 모든 파일 자산이 그 private 저장소에 있으므로, owner 가 GitHub 에서 직접 collaborator 로 추가해야 한다 — upplz 가 대신 부여하거나 확인할 수 없다.
-- **서버가 확인할 수 없는 것 — 인증서 저장소 접근 권한·저장소 안 파일(.enc·keystore)의 실존·ASC 앱 레코드·프로비저닝 프로파일 — 은 판정이 아니라 힌트로만 온다.** `setupComplete: true` 여도 이것들은 남아 있을 수 있으며, 스크립트가 실행 중에 최종 확인한다(확인할 수 없는 것을 판정에 넣으면 준비가 끝났는데도 막는 거짓 음성이 나기 때문이다). Play Console 앱 생성(최초 AAB 수동 업로드)도 같은 이유로 판정 밖이다.
+- **서버가 확인할 수 없는 것 — 인증서 저장소 접근 권한·저장소 안 파일(.enc·keystore)의 실존·ASC 앱 레코드·프로비저닝 프로파일의 Apple 쪽 실존(발급 기록은 본다) — 은 판정이 아니라 힌트로만 온다.** `setupComplete: true` 여도 이것들은 남아 있을 수 있으며, 스크립트가 실행 중에 최종 확인한다(확인할 수 없는 것을 판정에 넣으면 준비가 끝났는데도 막는 거짓 음성이 나기 때문이다). Play Console 앱 생성(최초 AAB 수동 업로드)도 같은 이유로 판정 밖이다.
 - **프로젝트 비밀번호는 저장소 전체의 열쇠다.** 인증서·프로파일·keystore·`.p8`·SA 가 모두 이 값으로 잠긴다. 분실하면 upplz 가 복구할 수 없고(서버는 저장된 값을 응답으로만 전달한다), 협업자를 내보낼 때 막는 것은 비밀번호가 아니라 **GitHub collaborator 제거**다(대시보드 이탈 체크리스트가 안내한다).
+- **상속은 복사 시점의 사실이다.** 원본이 아직 `setup_match_repo` 를 안 했을 때 가져오면 초기화 기록은 붙지 않는다 — 원본에서 ⑧ 을 마친 뒤 프로젝트 페이지의 '다른 프로젝트에서 복사' 를 한 번 더 하면 붙는다(`get_setup_status` 의 `apple.matchInitInherited`).
 - **윈도에서는 iOS 를 빌드할 수 없다**(맥 전용 — 윈도 iOS 는 후속). Android 는 Git Bash + Docker Desktop 에서 같은 스크립트를 쓴다(**윈도 실측 전 — 미검증**. 경로 오류로 멈추면 출력을 그대로 보여 주고 upplz 에 알려 달라고 안내한다).
 
 ## 7. 다음 단계 제안

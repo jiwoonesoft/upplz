@@ -1,6 +1,6 @@
 # upplz 플러그인 정식 배포 가이드
 
-고객에게 `upplz` 플러그인(현재 `2026.10.1`)을 배포하는 방법. **같은 디렉토리가 Claude Code 와 Codex 에 설치된다** — Claude Code 는 설치 한 번으로 스킬 + 커맨드 `/upplz:init` + 원격 MCP 연결 + 프로젝트 API 키가 함께 구성되고, Codex 는 스킬만 설치한 뒤 `$upplz:upplz-init` §0(또는 대시보드의 명령 두 줄)으로 MCP 를 연결한다.
+고객에게 `upplz` 플러그인(현재 `2026.10.2`)을 배포하는 방법. **같은 디렉토리가 Claude Code 와 Codex 에 설치된다** — Claude Code 는 설치 한 번으로 스킬 + 커맨드 `/upplz:init` + 원격 MCP 연결 + 프로젝트 API 키가 함께 구성되고, Codex 는 스킬만 설치한 뒤 `$upplz:upplz-init` §0(또는 대시보드의 명령 두 줄)으로 MCP 를 연결한다.
 
 ## 배포 채널: 공개 마켓 저장소 `jiwoonesoft/upplz`
 
@@ -41,7 +41,7 @@ upplz/                               # 공개 git 저장소 (마켓플레이스)
       "name": "upplz",
       "source": "./plugins/upplz",
       "description": "배포 설정 원스톱·테스트 업로드(빌드만)·출시 업로드(메타·아이콘·스샷 점검 포함)·메타데이터·아이콘·스크린샷 스킬 + 원격 upplz MCP 서버 연결 번들",
-      "version": "2026.10.1",
+      "version": "2026.10.2",
       "author": { "name": "Upplz" },
       "keywords": ["ios", "android", "build", "deployment", "capacitor", "app-store", "play-store", "fastlane"]
     }

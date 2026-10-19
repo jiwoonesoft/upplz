@@ -1,6 +1,6 @@
 {
   "name": "upplz",
-  "version": "2026.10.1",
+  "version": "2026.10.2",
   "description": "웹 게임/앱을 iOS(맥 로컬 빌드)·Android(맥·윈도 로컬 Docker 하네스)로 빌드·배포하는 upplz 워크플로우 스킬 모음. 배포 설정 원스톱(upplz-init)·테스트 업로드(빌드만)·출시 업로드(메타·아이콘·스샷 점검 포함)·메타데이터·아이콘·스크린샷. MCP 서버는 번들하지 않는다 — $upplz:upplz-init 이 ~/.codex/.env 와 codex mcp add 로 연결한다.",
   "author": { "name": "Upplz" },
   "keywords": ["ios", "android", "build", "deployment", "capacitor", "app-store", "play-store", "fastlane"],

@@ -54,6 +54,6 @@ description: 테스트 목적으로 빌드만 만들어 스토어에 업로드�
 ## Next
 `<플러그인 루트>/references/chaining.md`에 따라 물어본다.
 - 출시까지 진행? → `upplz-upload`(메타데이터·아이콘·스크린샷 점검 포함).
-- iOS: 테스터 추가?(add_testers — report_build_result로 uploaded 보고가 끝난 빌드만. 테스터 관리는 팀 키의 ASC 역할이 App Manager 이상이어야 한다. Android 에는 테스터 도구가 없다) / 아이콘·스크린샷·메타데이터 개별 갱신?(upplz-icon/upplz-screenshot/upplz-metadata).
+- iOS: 테스터 추가?(add_testers — report_build_result로 uploaded 보고가 끝난 빌드만. 테스터 관리는 팀 키의 ASC 역할이 App Manager 이상이어야 한다. 이메일은 ASC Users and Access 에 있는 **팀 사용자**만 가능하다(내부 그룹) — 아니면 ASC 에서 먼저 초대하고, 이메일을 받기 전에 이 조건을 알린다. Android 에는 테스터 도구가 없다) / 아이콘·스크린샷·메타데이터 개별 갱신?(upplz-icon/upplz-screenshot/upplz-metadata).
 - Android: 메타데이터 갱신?(upplz-metadata → apply_android_metadata). 아이콘/스크린샷 자동 생성·테스터 도구는 iOS 전용.
 - 스토어 심사 제출은 수동(iOS: App Store Connect 웹 Add for Review → Submit for Review, Android: Play Console 웹 트랙별 검토·출시)임을 안내한다.

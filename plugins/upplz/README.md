@@ -1,6 +1,6 @@
 # upplz 플러그인 (Claude Code · Codex)
 
-웹 게임/앱을 iOS·Android로 빌드·배포하는 upplz 워크플로우 스킬 모음(iOS 는 맥 로컬 빌드, Android 는 맥·윈도 로컬 Docker 하네스). **같은 디렉토리가 두 호스트에 설치된다** — Claude Code 는 `.claude-plugin/plugin.json`(스킬 + 커맨드 + 번들 MCP), Codex 는 `.codex-plugin/plugin.json`(스킬만)을 읽는다.
+웹 게임/앱을 iOS·Android로 빌드·배포하는 upplz 워크플로우 스킬 모음(iOS 는 맥 로컬 빌드, Android 는 에이전트가 직접 빌드하고 서명·업로드만 맥·윈도 로컬 스크립트). **같은 디렉토리가 두 호스트에 설치된다** — Claude Code 는 `.claude-plugin/plugin.json`(스킬 + 커맨드 + 번들 MCP), Codex 는 `.codex-plugin/plugin.json`(스킬만)을 읽는다.
 
 ## 스킬
 - `upplz-init` — **배포 설정 원스톱**(Claude Code `/upplz:init` · Codex `$upplz:upplz-init`, 인자 `ios|android|credentials`). upplz 도구가 보이지 않으면 §0 에서 MCP 연결부터 한다. 서버 셋업 상태(`get_setup_status`)와 이 머신의 로컬 상태를 함께 보고 남은 설정을 끝까지 처리한다. `.p8`·Play Service Account 는 **파일 경로만** 받아(본문을 읽지 않는다) 반환된 스크립트가 인증서 저장소에 암호화해 넣는다. 협업자는 owner 전용 단계만 owner 에게 요청하고 빌드·업로드·메타데이터까지 진행한다. 절차는 `references/first-time-setup.md` 하나를 upload 계열 스킬과 공유한다.
@@ -51,4 +51,4 @@ codex plugin add upplz@upplz
 ## 전제
 - upplz MCP 서버 접속(원격) — 프로젝트 식별자·비밀번호 보관과 빌드·업로드·등록 스크립트 제공(서버는 Apple·Google 을 직접 부르지 않는다).
 - 인증서 저장소(owner 소유 private GitHub)의 collaborator 권한 — 인증서·프로파일·keystore·Apple 팀 키·Play Service Account 가 모두 여기 있다.
-- 로컬 toolchain(**빠진 것은 에이전트가 설치한다** — 비밀번호·GUI 확인·로그인만 사용자에게 요청): iOS 는 맥의 Xcode/fastlane/openssl(ImageMagick 은 아이콘·프레임 합성 시), Android 는 Docker(`web-game-android` 이미지 — 플러그인에 든 `docker/android/Dockerfile` 로 만든다) — 윈도는 Git Bash + Docker Desktop. 절차는 `references/first-time-setup.md` 「빌드 환경 설치」.
+- 로컬 toolchain(**빠진 것은 에이전트가 설치한다** — 비밀번호·GUI 확인·로그인만 사용자에게 요청): iOS 는 맥의 Xcode/fastlane/openssl(ImageMagick 은 아이콘·프레임 합성 시), Android 는 git/openssl + JDK(keytool·jarsigner — Android 를 빌드한 JDK 그대로, Capacitor 8 은 JDK 21) + Node.js(Play API) — 윈도는 Git Bash + JDK + Node.js(미검증). Docker 는 쓰지 않는다. 절차는 `references/first-time-setup.md` 「빌드 환경 설치」.

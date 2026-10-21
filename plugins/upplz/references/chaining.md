@@ -16,7 +16,7 @@
 
 Android는 `generate_app_icon`/`generate_ios_screenshots`/`generate_native_screenshots`/`add_testers` 대상이 아니다(모두 iOS 전용 도구). Android 체인은 다음으로 좁혀진다:
 
-- **upplz-upload-build-only(Android)** 완료(최초 배포면 first-time-setup.md의 Android 절차: `setup_project(android)` → `setup_android_keystore`(조건부 — 저장소 URL·비밀번호가 저장돼 있으면 협업자도 실행. keystore 를 인증서 저장소에 준비. Android 전용 프로젝트는 이 도구가 `matchRepoUrl`·`matchPassword` 로 저장소 URL·프로젝트 비밀번호도 정한다) → (사전 안내: Play 개발자 계정/Service Account 발급 → `register_android_credentials` 로 저장소에 등록, owner 전용) → 첫 빌드로 AAB 생성 → Play Console 앱 생성+최초 AAB 수동 업로드(최초 1회만) 후 반복 빌드부터 `upload_to_store(android)`) → 제안: 출시까지 진행?(upplz-upload) / 메타데이터 정리?(upplz-metadata → `apply_android_metadata`, 선행: `pull_android_metadata`로 기존 값 확인 가능)
+- **upplz-upload-build-only(Android)** 완료(최초 배포면 first-time-setup.md의 Android 절차: Android 프로젝트 준비(에이전트가 직접 — `setup_project` 의 android 는 `ANDROID_SCAFFOLD_REMOVED` 안내만) → `setup_android_keystore`(조건부 — 저장소 URL·비밀번호가 저장돼 있으면 협업자도 실행. keystore 를 인증서 저장소에 준비. Android 전용 프로젝트는 이 도구가 `matchRepoUrl`·`matchPassword` 로 저장소 URL·프로젝트 비밀번호도 정한다) → (사전 안내: Play 개발자 계정/Service Account 발급 → `register_android_credentials` 로 저장소에 등록, owner 전용) → 에이전트가 서명 없는 AAB 빌드 → `sign_android_bundle` 로 서명 → `report_build_result({ versionCode, marketingVersion })` → Play Console 앱 생성+최초 AAB 수동 업로드(최초 1회만) 후 반복 빌드부터 `upload_to_store(android)`) → 제안: 출시까지 진행?(upplz-upload) / 메타데이터 정리?(upplz-metadata → `apply_android_metadata`, 선행: `pull_android_metadata`로 기존 값 확인 가능)
 - **upplz-upload(Android)** → 아이콘/스크린샷은 상태 확인·안내만, 메타데이터 점검 → 빌드 → 업로드 → 보고 → 심사 제출 수동 안내.
 - **upplz-metadata(Android)** 완료 → 독립 종료(빌드와 무관). 코드 변경이 있으면 upplz-upload-build-only(Android) 제안.
 

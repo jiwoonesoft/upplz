@@ -63,7 +63,7 @@ Codex 플러그인은 MCP 서버를 번들하지 않는다(설치 때 값을 묻
 
 ## 1. 라우팅·연결 게이트
 
-1. `<플러그인 루트>/references/routing.md` 를 읽어 **머신(맥/윈도) × 대상(iOS/Android)**을 확정한다. 게이트에 걸리면(iOS ∧ 비맥) 그 문서의 안내로 **중단**한다. 윈도에서는 Android 만 진행한다(Git Bash + Docker Desktop).
+1. `<플러그인 루트>/references/routing.md` 를 읽어 **머신(맥/윈도) × 대상(iOS/Android)**을 확정한다. 게이트에 걸리면(iOS ∧ 비맥) 그 문서의 안내로 **중단**한다. 윈도에서는 Android 만 진행한다(Git Bash + JDK + Node.js — 미검증).
 2. 첫 upplz MCP 도구 호출이 연결/인증에 실패하면 routing.md의 **MCP 연결 게이트**를 그대로 따르고 중단한다. 특히 401 `invalid_or_inactive`면:
    > "이 키는 폐기됐거나 다른 프로젝트의 키입니다. upplz 대시보드의 **프로젝트 페이지**에서 키를 다시 발급받아 넣어 주세요 — Claude Code 는 `/plugin` → upplz 설정에, Codex 는 `~/.codex/.env` 의 `UPPLZ_API_KEY` 에(§0 의 첫 줄 — `.env` 기록 명령) 넣고 재시작합니다."
 
@@ -84,13 +84,14 @@ Codex 플러그인은 MCP 서버를 번들하지 않는다(설치 때 값을 묻
    ```bash
    uname -s                                   # 맥 여부(routing.md) — 윈도는 Git Bash 에서 MINGW*/MSYS*
    ls -d ios android 2>/dev/null || echo "스캐폴드 없음"
-   for c in brew xcodebuild fastlane ruby pod flutter docker gh openssl jq node magick; do
+   for c in brew xcodebuild fastlane ruby pod flutter gh openssl jq node magick; do
      command -v "$c" >/dev/null 2>&1 && echo "$c: 있음" || echo "$c: 없음"
    done
    XV=$(xcodebuild -version 2>/dev/null | head -1); [ -n "$XV" ] && echo "Xcode: $XV" || echo "Xcode: 없음(또는 Command Line Tools 만 있음)"
    ruby -rxcodeproj -e 'exit 0' 2>/dev/null && echo "xcodeproj: 있음" || echo "xcodeproj: 없음"
-   docker info >/dev/null 2>&1 && echo "docker 데몬: 실행 중" || echo "docker 데몬: 꺼짐 또는 없음"
-   docker image inspect web-game-android --format 'web-game-android: {{.Architecture}}' 2>/dev/null || echo "web-game-android: 없음"
+   jarsigner -help >/dev/null 2>&1 && echo "jarsigner: ok" || echo "jarsigner: 없음(JAVA_HOME)"   # 맥 /usr/bin/jarsigner 는 자리표시자라 실행해 본다
+   node -v 2>/dev/null || echo "node: 없음"
+   [ -n "$ANDROID_HOME" ] && echo "ANDROID_HOME: $ANDROID_HOME" || echo "ANDROID_HOME: 없음(Android 빌드 시 gradle 이 SDK 를 못 찾는다 — first-time-setup.md Android SDK 행)"
    grep -hs applicationId android/app/build.gradle android/app/build.gradle.kts
    grep -hs appId capacitor.config.json capacitor.config.ts capacitor.config.js
    true                                       # 패키지명은 없을 수도 있다 — 여기서 멈추지 않는다
@@ -102,8 +103,8 @@ Codex 플러그인은 MCP 서버를 번들하지 않는다(설치 때 값을 묻
 
    읽는 법:
    - **스캐폴드**(`ios/`·`android/`) 존재 → 스캐폴드 단계 축소(first-time-setup.md 판정 규칙).
-   - **toolchain**: iOS는 Xcode(`xcodebuild -version` 이 버전을 내야 한다 — Command Line Tools 만으로는 안 된다)·`fastlane`·xcodeproj, projectType 에 따라 `node`(web-capacitor)·`pod`(native-ios). Android는 docker 데몬 + `web-game-android` 이미지 — **`amd64` 여야 한다**(`arm64` 면 다시 빌드한다). 공통으로 **`openssl`**(인증서 저장소의 암호화 파일을 푼다 — 맥 기본 LibreSSL·Homebrew OpenSSL·Git for Windows 의 openssl 모두 된다). `flutter` 는 flutter 프로젝트만, `magick`(ImageMagick)은 아이콘·스크린샷 프레임을 만들 때만 필요하다. `jq` 는 없어도 된다(Android SA 의 `client_email` 을 뽑을 때 `node` 로 대신한다). **`node` 는 Android owner 에게 필수**다 — `register_android_credentials` 스크립트가 키 파일을 `node` 로 확인한다(에이전트 설치판에 node 가 따라온다고 가정하지 않는다). 점검 단계에서는 결과만 기록하고 멈추지 않는다 — **빠진 것은 로컬 선행 단계의 빌드 환경 준비(first-time-setup.md iOS ② / Android 2)에서 「빌드 환경 설치」대로 에이전트가 설치한다.** 설치 방법만 알려 주고 사용자에게 맡기지 않는다.
-   - **패키지명**(`applicationId`/`appId`): 값이 나오면 이후 `get_setup_status({ platform: "android", packageName })`·`setup_android_keystore`·`start_build` 에 **그대로 쓴다**. 아무것도 안 나오면 "확인 못 함"으로 두고 넘어간다 — 스캐폴드 전에는 없는 것이 정상이며, 이 단계에서 사용자에게 묻지 않는다(first-time-setup.md Android 3 에서 정한다).
+   - **toolchain**: iOS는 Xcode(`xcodebuild -version` 이 버전을 내야 한다 — Command Line Tools 만으로는 안 된다)·`fastlane`·xcodeproj, projectType 에 따라 `node`(web-capacitor)·`pod`(native-ios). Android 는 **JDK**(`jarsigner: ok` 가 나와야 한다 — keytool·jarsigner 가 든 JDK 이며 Android 를 빌드한 JDK 그대로 쓴다. Capacitor 8·AGP 8.13 은 JDK 21: 맥은 `brew install openjdk@21` + `JAVA_HOME`)와 **Node.js**(Play API 스크립트). Docker 는 쓰지 않는다. 공통으로 **`openssl`**(인증서 저장소의 암호화 파일을 푼다 — 맥 기본 LibreSSL·Homebrew OpenSSL·Git for Windows 의 openssl 모두 된다). `flutter` 는 flutter 프로젝트만, `magick`(ImageMagick)은 아이콘·스크린샷 프레임을 만들 때만 필요하다. `jq` 는 없어도 된다(Android SA 의 `client_email` 을 뽑을 때 `node` 로 대신한다). **`node` 는 Android 에 필수**다 — `upload_to_store`·`apply_android_metadata`·`pull_android_metadata` 의 Play API 스크립트가 호스트 Node 로 돌고, `register_android_credentials` 스크립트가 키 파일을 `node` 로 확인한다(에이전트 설치판에 node 가 따라온다고 가정하지 않는다). 점검 단계에서는 결과만 기록하고 멈추지 않는다 — **빠진 것은 로컬 선행 단계의 빌드 환경 준비(first-time-setup.md iOS ② / Android 2)에서 「빌드 환경 설치」대로 에이전트가 설치한다.** 설치 방법만 알려 주고 사용자에게 맡기지 않는다.
+   - **패키지명**(`applicationId`/`appId`): 값이 나오면 이후 `get_setup_status({ platform: "android", packageName })`·`setup_android_keystore`·`sign_android_bundle` 에 **그대로 쓴다**. 아무것도 안 나오면 "확인 못 함"으로 두고 넘어간다 — 스캐폴드 전에는 없는 것이 정상이며, 이 단계에서 사용자에게 묻지 않는다(first-time-setup.md Android 3 에서 정한다).
    - **`gh`**: 인증서 저장소(private) clone 자격 확인용. 없으면 git credential helper로도 되므로 "확인 못 함"으로 둔다.
    - **미push**: `UNPUSHED_UNKNOWN`이면 업스트림도 `origin/HEAD`도 없다는 뜻이다 — **막지 말고** "미push 여부를 확인하지 못했습니다. push가 안 되어 있으면 이전 코드로 빌드됩니다"라고 알린 뒤 진행한다. 커밋 목록이 나오면 push를 권한다.
 3. 두 결과를 합쳐 사용자에게 **지금 남은 일**과 **확인하지 못한 항목**을 한 문단으로 알린 뒤 3단계로 간다.
@@ -119,7 +120,7 @@ Codex 플러그인은 MCP 서버를 번들하지 않는다(설치 때 값을 묻
 
 **할 수 있는 것은 끝까지 하고, owner 전용 단계에서만 멈춘다.** "협업자니까" 를 이유로 조기 종료하지 않는다.
 
-owner 전용 도구는 **21개 중 3개**다(서버 `requireOwner` 가드 기준 — `grep -rn 'requireOwner' src/mcp/tools/` 와 1:1로 맞춘 목록이다). 3종 모두 **공유 자산을 만들거나 바꾸는** 도구다. 도구 하나가 한 행이다:
+owner 전용 도구는 **22개 중 3개**다(서버 `requireOwner` 가드 기준 — `grep -rn 'requireOwner' src/mcp/tools/` 와 1:1로 맞춘 목록이다). 3종 모두 **공유 자산을 만들거나 바꾸는** 도구다. 도구 하나가 한 행이다:
 
 | 도구 | 단계 | 이유 |
 |---|---|---|
@@ -129,7 +130,7 @@ owner 전용 도구는 **21개 중 3개**다(서버 `requireOwner` 가드 기준
 
 **`setup_android_keystore` 는 조건부다(D3)** — 저장소 URL·프로젝트 비밀번호가 이미 저장된 프로젝트(`android.certRepoUrl: true` ∧ `apple.matchPasswordStored: true`)에서는 협업자도 `setup_android_keystore({ packageName })` 로 자기 앱의 keystore 를 준비한다(기존 파일은 덮어쓰지 않는다). 그 둘이 없거나 `matchRepoUrl`·`matchPassword` 를 넘기면 `OWNER_ONLY` 다 — `nextStepHint` 가 어느 쪽인지 이미 구분해 말한다.
 
-**이 표에 없는 도구는 협업자도 호출한다** — `analyze_repository`·`get_setup_status`·`setup_project`·`register_bundle_id`·`add_provisioning_profile`·`start_build`·`get_build_status`·`report_build_result`·`upload_to_store`·`add_testers`·`apply_ios_metadata`·`pull_ios_metadata`·`apply_android_metadata`·`pull_android_metadata`·`generate_app_icon`·`generate_ios_screenshots`·`generate_native_screenshots`. 막혀 있다고 가정하지 말 것.
+**이 표에 없는 도구는 협업자도 호출한다** — `analyze_repository`·`get_setup_status`·`setup_project`·`register_bundle_id`·`add_provisioning_profile`·`start_build`·`sign_android_bundle`·`get_build_status`·`report_build_result`·`upload_to_store`·`add_testers`·`apply_ios_metadata`·`pull_ios_metadata`·`apply_android_metadata`·`pull_android_metadata`·`generate_app_icon`·`generate_ios_screenshots`·`generate_native_screenshots`. 막혀 있다고 가정하지 말 것.
 
 `apple.matchInitInherited: true` 면 owner 가 다른 프로젝트의 공유 자산을 가져온 프로젝트다 — ⑥·⑧ 은 끝난 것으로 보고 ⑦ → ⑨ 로 간다.
 
@@ -153,11 +154,12 @@ owner 전용 도구는 **21개 중 3개**다(서버 `requireOwner` 가드 기준
    - 스크립트가 `[fetch] 인증서 저장소에 … 가 없습니다` 로 멈추면 owner 가 그 메시지가 지목한 등록 도구를 아직 실행하지 않은 것이다 — 문구를 그대로 전달해 owner 에게 요청한다.
    - `[decrypt]` 로 멈추면 먼저 응답의 `env.MATCH_PASSWORD` 를 **그대로** export 했는지 확인하고 다시 실행한다(셸에 남은 다른 값이 흔한 원인이다 — 값을 추측해 바꾸지 않는다). 그래도 멈추면 응답 `troubleshooting.passwordMismatch` 를 그대로 전달한다 — owner 가 그 파일의 등록 도구(`.p8` → `register_ios_credentials`, Play SA → `register_android_credentials`)를 다시 실행해야 하고, 같은 인증서 저장소를 다른 upplz 프로젝트도 쓰면 재실행 대신 대시보드 '다른 프로젝트에서 복사' 로 비밀번호를 맞춘다.
 7. **Android 의 역할 분기**: iOS 와 같다 — 조건은 인증서 저장소(owner 소유 private GitHub)의 **collaborator** + **활성 멤버십** 두 가지이고, 협업자도 업로드·스토어 메타데이터까지 한다. keystore 는 그 저장소의 `android/<packageName>.keystore` 에, Play Service Account 는 같은 저장소의 `upplz/android/service-account.json.enc` 에 있으므로 협업자 로컬에 둘 파일은 없다.
-   - 인증서 저장소에 keystore 가 없으면 `start_build` 의 buildScript 가 멈추고 "owner 가 `setup_android_keystore` 를 실행해야 한다"고 알려 준다 — **그 문구를 그대로 전달**한다(URL·비밀번호가 저장된 프로젝트면 협업자 본인이 실행한다 — D3).
+   - **Android 빌드는 upplz 도구가 하지 않는다.** 에이전트가 저장소에 맞는 방법(Capacitor·Kotlin·Flutter·RN)으로 서명 없는 release AAB 를 직접 만들고(versionCode 는 `get_setup_status` 의 `android.nextVersionCode`), `sign_android_bundle({ packageName, repoUrl, aabPath })` 로 서명한 뒤 `report_build_result` 에 `versionCode`·`marketingVersion` 을 넘긴다 — first-time-setup.md Android 절차.
+   - 인증서 저장소에 keystore 가 없으면 `sign_android_bundle` 의 signScript 가 멈추고 "owner 가 `setup_android_keystore` 를 실행해야 한다"고 알려 준다 — **그 문구를 그대로 전달**한다(URL·비밀번호가 저장된 프로젝트면 협업자 본인이 실행한다 — D3).
    - Play Service Account 가 미등록이면 `upload_to_store`·`apply_android_metadata`·`pull_android_metadata` 가 `PRECONDITION_FAILED` 로 막는다 — owner 에게 `register_android_credentials` 실행을 요청하고 그 단계만 대기한다.
    - 저장소 접근이 거부되면(clone 실패) owner 에게 **GitHub collaborator 추가**를 요청한다. upplz 는 이 권한을 부여할 수도 확인할 수도 없다.
    - **owner 에게 요청할 때는 한 번에 묶는다.** Android 의 owner 요청 단계는 최대 둘이고(keystore 는 URL·비밀번호가 없을 때만) GitHub 권한까지 셋인데, 하나씩 요청하면 빌드에서 막히고 업로드에서 또 막혀 왕복이 그만큼 늘어난다. 요청문에 **① `setup_android_keystore({ packageName })` ② `register_android_credentials({ serviceAccountPath, clientEmail })` ③ 인증서 저장소에 나를 GitHub collaborator 로 추가** 를 함께 적는다. 그동안 로컬 선행 단계(Android 1–4)를 마쳐 둔다. owner 가 끝내면 **첫 빌드부터 재개**한다.
-   - **keystore 비밀번호를 따로 정하지 않는다.** keystore 비밀번호는 프로젝트 비밀번호와 **같은 값**이고, `start_build` 응답 `env.MATCH_PASSWORD` 로 자동 전달된다.
+   - **keystore 비밀번호를 따로 정하지 않는다.** keystore 비밀번호는 프로젝트 비밀번호와 **같은 값**이고, `sign_android_bundle` 응답 `env.MATCH_PASSWORD` 로 자동 전달된다.
    - **Android 도 iOS 와 같은 `nextStep` 루프(위 2)를 돈다** — `get_setup_status({ platform: "android", packageName })` 로 호출하면 최상위 `nextStep`·`nextStepHint`·`setupComplete` 가 Android 것으로 온다(`packageName` 은 선택 — 알면 넘겨서 요청문에 패키지명이 찍히게 하고, 모르면 생략한다). `setup_android_keystore`·`register_android_credentials` 에서 멈추면 **3 을 따른다** — 서버 힌트가 이미 **둘을 한 번에 요청하라**고 말하므로 문구를 다시 쓰지 말고 그대로 전달한다. 단 `setup_android_keystore` 힌트가 **직접형**(D3 — 저장소 URL·비밀번호가 저장된 프로젝트의 협업자)이면 요청이 아니라 본인이 실행한다.
 
 ### owner (`team.role: "owner"`)
@@ -193,7 +195,7 @@ owner 전용 도구는 **21개 중 3개**다(서버 `requireOwner` 가드 기준
 
 1. **iOS**: `get_setup_status`를 다시 호출해 `setupComplete: true`를 확인한다(아니면 `nextStep`으로 남은 단계를 이어서 수행).
 2. **Android**: `get_setup_status({ platform: "android", packageName }).setupComplete` 로 확인한다(아니면 최상위 `nextStep`으로 남은 단계를 이어서 수행 — iOS 와 같은 루프다).
-   - **`android.buildSucceeded: false` 면 keystore 파일은 미확인 상태다.** 서버는 인증서 저장소 안을 볼 수 없어 `setup_android_keystore` 발급 기록으로 추정했을 뿐이므로, **스크립트를 실제로 실행해 마쳤는지 사용자에게 한 번 확인**한다(최종 확인은 첫 빌드의 buildScript 가 한다).
+   - **`android.buildSucceeded: false` 면 keystore 파일은 미확인 상태다.** 서버는 인증서 저장소 안을 볼 수 없어 `setup_android_keystore` 발급 기록으로 추정했을 뿐이므로, **스크립트를 실제로 실행해 마쳤는지 사용자에게 한 번 확인**한다(최종 확인은 `sign_android_bundle` 의 signScript 가 한다).
 3. **iOS+Android 프로젝트**: 한 번의 호출로 둘 다 본다 — 최상위는 `platform` 이 고른 쪽이고, 다른 쪽은 응답의 `ios`/`android` 블록에 있다.
 4. 종료 안내:
    > "배포 설정이 끝났습니다. 이제 '배포하자' 또는 '테스트 빌드 올려줘' 로 빌드를 시작할 수 있습니다."
@@ -206,7 +208,7 @@ owner 전용 도구는 **21개 중 3개**다(서버 `requireOwner` 가드 기준
 - **서버가 확인할 수 없는 것 — 인증서 저장소 접근 권한·저장소 안 파일(.enc·keystore)의 실존·ASC 앱 레코드·프로비저닝 프로파일의 Apple 쪽 실존(발급 기록은 본다) — 은 판정이 아니라 힌트로만 온다.** `setupComplete: true` 여도 이것들은 남아 있을 수 있으며, 스크립트가 실행 중에 최종 확인한다(확인할 수 없는 것을 판정에 넣으면 준비가 끝났는데도 막는 거짓 음성이 나기 때문이다). Play Console 앱 생성(최초 AAB 수동 업로드)도 같은 이유로 판정 밖이다.
 - **프로젝트 비밀번호는 저장소 전체의 열쇠다.** 인증서·프로파일·keystore·`.p8`·SA 가 모두 이 값으로 잠긴다. 분실하면 upplz 가 복구할 수 없고(서버는 저장된 값을 응답으로만 전달한다), 협업자를 내보낼 때 막는 것은 비밀번호가 아니라 **GitHub collaborator 제거**다(대시보드 이탈 체크리스트가 안내한다).
 - **상속은 복사 시점의 사실이다.** 원본이 아직 `setup_match_repo` 를 안 했을 때 가져오면 초기화 기록은 붙지 않는다 — 원본에서 ⑧ 을 마친 뒤 프로젝트 페이지의 '다른 프로젝트에서 복사' 를 한 번 더 하면 붙는다(`get_setup_status` 의 `apple.matchInitInherited`).
-- **윈도에서는 iOS 를 빌드할 수 없다**(맥 전용 — 윈도 iOS 는 후속). Android 는 Git Bash + Docker Desktop 에서 같은 스크립트를 쓴다(**윈도 실측 전 — 미검증**. 경로 오류로 멈추면 출력을 그대로 보여 주고 upplz 에 알려 달라고 안내한다).
+- **윈도에서는 iOS 를 빌드할 수 없다**(맥 전용 — 윈도 iOS 는 후속). Android 는 Git Bash + JDK + Node.js 에서 같은 스크립트를 쓴다(**윈도 실측 전 — 미검증**. 경로 오류로 멈추면 출력을 그대로 보여 주고 upplz 에 알려 달라고 안내한다).
 
 ## 7. 다음 단계 제안
 

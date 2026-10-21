@@ -5,7 +5,7 @@
 ## 설치
 
 ```
-# Claude Code — 설치 중 Upplz API Key·Upplz MCP Endpoint 입력(→ 번들 MCP 연결)
+# Claude Code — 설치는 스킬·커맨드만(2026.10.5 부터 MCP 미번들). MCP 는 앱 저장소 디렉토리에서 대시보드 프로젝트 페이지 「Claude Code」탭의 claude mcp add 한 줄(local 범위 — 키 1개 = 프로젝트 1개, 저장소마다 그 프로젝트의 키)로 연결하고 그 디렉토리에서 재시작(그 줄은 키가 셸 히스토리와 ~/.claude.json 에 남는다 — 대시보드 안내 참조)
 /plugin marketplace add jiwoonesoft/upplz
 /plugin install upplz@upplz
 /reload-plugins

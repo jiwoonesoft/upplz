@@ -16,7 +16,7 @@ upplz/                               # 공개 git 저장소 (마켓플레이스)
 ├── .agents/plugins/marketplace.json # Codex 카탈로그(이름 upplz)
 └── plugins/
     └── upplz/                       # 이 저장소의 plugin/ 내용을 그대로 복사
-        ├── .claude-plugin/plugin.json   # Claude Code: userConfig + 번들 MCP
+        ├── .claude-plugin/plugin.json   # Claude Code: 스킬 + 커맨드(MCP 미번들 — 2026.10.5)
         ├── .codex-plugin/plugin.json    # Codex: 스킬만
         ├── commands/init.md             # Claude Code 전용 얇은 래퍼
         ├── skills/                      # upplz-init 포함 6종(두 호스트 공용)
@@ -68,14 +68,16 @@ upplz/                               # 공개 git 저장소 (마켓플레이스)
 ## 고객 설치 절차
 
 ### Claude Code
-`/plugin install` 중에 Upplz API Key·Upplz MCP Endpoint 를 입력하고, 마지막 줄 `/upplz:init` 으로 배포 설정을 시작한다(프로젝트당 1회).
+플러그인 설치는 스킬·커맨드만 넣는다(설치 중 아무것도 묻지 않는다). MCP 는 **앱 저장소 디렉토리에서** 대시보드 「Claude Code」탭의 `claude mcp add` 한 줄(local 범위, 실제 엔드포인트·키가 채워져 있다)로 등록하고, 그 디렉토리에서 Claude Code 를 재시작한 뒤 `/upplz:init` 으로 배포 설정을 시작한다(프로젝트당 1회).
 ```
 /plugin marketplace add jiwoonesoft/upplz
 /plugin install upplz@upplz
 /reload-plugins
+<앱 저장소에서 claude mcp add … --scope local>   # 대시보드 「Claude Code」탭의 교체형 한 줄
+<그 디렉토리에서 Claude Code 재시작>
 /upplz:init
 ```
-- `userConfig` 에 따라 **Upplz API Key**(`sensitive: true`, keychain 저장)와 **Upplz MCP Endpoint** 를 묻는다. 저장된 값은 번들 MCP 서버의 `Authorization: Bearer ${user_config.api_key}` 헤더로 주입된다.
+- 2026.10.5 부터 MCP 를 번들하지 않는다(설계 2026-10-21). 플러그인 설정값(`userConfig`)은 사용자당 1개라 프로젝트별 키를 둘 수 없었다 — 공식 문서가 project·local 설정의 `pluginConfigs` 를 무시한다고 명시한다. local 등록은 `~/.claude.json` 의 그 프로젝트 경로 아래에 평문(0600)으로 들어가고 같은 URL 의 플러그인 서버보다 우선한다(2026-10-21 실측).
 
 ### Codex
 ```
@@ -98,11 +100,13 @@ codex plugin add upplz@upplz
 4. 고객 갱신: Claude Code `/plugin marketplace update upplz` 후 재설치/갱신, Codex `codex plugin marketplace upgrade upplz`(Git 마켓 스냅숏을 새로 받으면서 설치된 플러그인 캐시도 새 버전으로 바꾼다 — 재설치 불필요. 2026-10-12 실측은 https URL 을 git `insteadOf` 로 로컬 bare 저장소에 붙인 대역 Git 마켓에서 했고, 고객이 쓰는 `jiwoonesoft/upplz`(owner/repo) 마켓에서는 미검증이다). `upgrade` 뒤에도 `codex plugin list` 의 `upplz@upplz` 버전이 그대로면 `codex plugin remove upplz@upplz` → `codex plugin add upplz@upplz` 로 다시 설치한다. 로컬 경로로 추가한 마켓(아래 검증 체크리스트)은 `upgrade` 대상이 아니다(`is not configured as a Git marketplace`) — `codex plugin add upplz@upplz` 를 다시 실행하면 새 버전으로 교체된다.
 5. **게시 순서 — 마켓이 웹 안내보다 먼저 나간다.** 대시보드는 마켓 저장소의 이름·명령(`upplz@upplz`)을 그대로 안내하므로, 웹이 먼저 배포되면 두 호스트 모두 새 설치 명령이 실패한다. 순서는 ⓪ 마켓 저장소 이름 변경(`gh repo rename` — 저장소 이름이 바뀌는 릴리스만. 2026-10-12 의 `jiwoonesoft/upplz` 변경은 완료) → ① 마켓 push(3) → ② 공개 저장소로 두 호스트 설치 확인(Claude Code `/plugin marketplace add jiwoonesoft/upplz` → `/plugin install upplz@upplz`, Codex `codex plugin marketplace add jiwoonesoft/upplz` → `codex plugin add upplz@upplz` — `owner/repo` 형식의 Codex 마켓 추가는 아직 미검증이라 여기서 처음 확인한다) → ③ 웹 배포 → ④ upplz 서버 재시작(서버 코드가 바뀌지 않은 릴리스면 ④ 는 생략 — 서버 문구가 웹 화면을 가리키면 반드시 ③ 뒤). 서버 코드가 바뀐 릴리스는 `pnpm build` 를 ① 전에 끝내 두고(타입 오류면 게시를 시작하지 않는다 — 재시작 직전으로 미루지 않는다), 스키마까지 바뀌면 ③·④ 를 upplz 서버 저장소 CLAUDE.md 「배포 순서」 1~5 로 대신한다(그 1 의 build 는 이미 끝냈으므로 건너뛴다). 마켓 이름이 바뀌는 릴리스면 ② 뒤에 「기존 사용자 이관」 절차를 기존 설치자에게 직접 알린다. 모두 사용자 지시가 있을 때만 한다.
 
-> Claude Code 의 `userConfig` 는 **설치 시점에만** 프롬프트된다. 업데이트만으로는 재입력되지 않으므로, 키 변경이 필요하면 재설치를 안내한다. Codex 는 `.env` 값만 바꾸고 Codex 를 재시작하면 된다(MCP 서버는 기동 때 로드된다).
+> 키 변경은 두 호스트 모두 재설치가 아니다 — Claude Code 는 앱 저장소에서 「Claude Code」탭의 `claude mcp add` 줄(교체형)을 다시 실행하고 재시작, Codex 는 `.env` 값만 바꾸고 재시작한다(MCP 서버는 기동 때 로드된다).
+>
+> **2026.10.5 이관**: 2026.10.4 이하는 MCP 를 번들했다(설정값 1개가 전 프로젝트에 쓰였다). 업데이트하면 번들 서버가 사라지므로 기존 설치자는 앱 저장소마다 「Claude Code」탭의 `claude mcp add` 줄을 한 번 실행해야 한다 — 게시 때 직접 알린다(「버전 업데이트 배포」 5).
 
 ## 기존 사용자 이관 (2026-10-12 이름 변경)
 
-Claude Code 에 옛 이름으로 등록된 마켓은 **제거 후 재추가**한다 — 등록 이름과 파일 안 이름이 어긋난 마켓을 Claude Code 가 어떻게 다루는지 확인되지 않아 이것을 표준으로 둔다. 첫 줄 `/plugin uninstall upplz@upplz-tools` 로 옛 마켓에서 설치한 플러그인을 먼저 지운다(`remove` 가 설치된 플러그인 때문에 거부되는지 확인되지 않아 앞에 둔다). 설치된 적이 없으면 그 줄은 건너뛴다. `/plugin install upplz@upplz` 는 키·엔드포인트를 다시 묻는다.
+Claude Code 에 옛 이름으로 등록된 마켓은 **제거 후 재추가**한다 — 등록 이름과 파일 안 이름이 어긋난 마켓을 Claude Code 가 어떻게 다루는지 확인되지 않아 이것을 표준으로 둔다. 첫 줄 `/plugin uninstall upplz@upplz-tools` 로 옛 마켓에서 설치한 플러그인을 먼저 지운다(`remove` 가 설치된 플러그인 때문에 거부되는지 확인되지 않아 앞에 둔다). 설치된 적이 없으면 그 줄은 건너뛴다. `/plugin install upplz@upplz` 는 아무것도 묻지 않는다(MCP 는 앱 저장소의 local 등록).
 ```
 /plugin uninstall upplz@upplz-tools
 /plugin marketplace remove upplz-tools
@@ -114,9 +118,9 @@ Claude Code 에 옛 이름으로 등록된 마켓은 **제거 후 재추가**한
 
 ## ⚠️ MCP 엔드포인트 설정
 
-`plugin.json`(Claude Code)의 `api_endpoint` 기본값은 자리표시자(`https://YOUR-UPPLZ-ENDPOINT`)다 — **실제 엔드포인트 주소는 공개 저장소에 박지 않는다**(개인/내부 인프라 노출 방지). 실제 주소는 별도(로컬 메모리·온보딩 채널)로 관리한다.
+플러그인 소스·문서의 엔드포인트는 자리표시자(`https://YOUR-UPPLZ-ENDPOINT`)다 — **실제 엔드포인트 주소는 공개 저장소에 박지 않는다**(개인/내부 인프라 노출 방지). 실제 주소는 별도(로컬 메모리·온보딩 채널)로 관리한다.
 
-- Claude Code 고객은 설치 시 `userConfig` 프롬프트에서, Codex 고객은 `codex mcp add --url` 에, upplz 온보딩(대시보드 **프로젝트 페이지**)으로 안내받은 **실제 엔드포인트**를 넣는다. 대시보드는 `NEXT_PUBLIC_MCP_SERVER_URL` 이 설정돼 있을 때만 실제 값을 채워 보여 준다.
+- Claude Code 고객은 `claude mcp add` 의 URL 에, Codex 고객은 `codex mcp add --url` 에, upplz 온보딩(대시보드 **프로젝트 페이지**)으로 안내받은 **실제 엔드포인트**를 넣는다. 대시보드는 `NEXT_PUBLIC_MCP_SERVER_URL` 이 설정돼 있을 때만 실제 값을 채워 보여 준다.
 - 정식/대규모 배포용 **안정적 프로덕션 엔드포인트**(고정 도메인·이중화)가 정해지면 두 호스트 모두 기본값으로 박을 수 있다. 개인 머신 주소는 공개 기본값으로 두지 않는다.
 - Streamable-HTTP 는 헤드리스/대화형 인증(MFA·패스프레이즈 프롬프트) 불가 — 인증은 Bearer 토큰(API 키) 단일 경로를 유지한다.
 

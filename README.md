@@ -1,6 +1,6 @@
 # upplz — 플러그인 마켓플레이스 (Claude Code · Codex)
 
-웹 게임/앱을 iOS(맥 로컬 빌드)·Android(맥·윈도 로컬 Docker 하네스)로 빌드·배포하는 **upplz** 플러그인. 같은 플러그인이 Claude Code 와 Codex 에 설치된다.
+웹 게임/앱을 iOS(맥 로컬 빌드)·Android(맥·윈도 — 서명 없는 AAB 는 에이전트가 빌드, 서명·Play 업로드는 호스트 JDK·Node)로 빌드·배포하는 **upplz** 플러그인. 같은 플러그인이 Claude Code 와 Codex 에 설치된다.
 
 ## 설치
 

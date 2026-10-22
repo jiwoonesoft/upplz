@@ -51,4 +51,4 @@
   1. **Git Bash**(Git for Windows) — 스크립트는 bash 이고, 인증서 저장소의 `.enc` 를 푸는 `openssl` 은 Git for Windows 에 들어 있다. `zip` 은 없을 수 있다(미검증 — 없으면 에이전트가 설치한다, first-time-setup.md 윈도 표). 스크립트는 반드시 Git Bash 에서 실행한다(PowerShell·cmd 아님).
   2. **JDK**(keytool·jarsigner — Android 를 빌드한 JDK 그대로, Temurin 21 권장) — `setup_android_keystore` 의 keystore 생성·검증과 `sign_android_bundle` 의 서명이 호스트 JDK 로 돈다. 없으면 에이전트가 설치한다(first-time-setup.md 「빌드 환경 설치」 윈도 표).
   3. **Node.js** — `upload_to_store`·`apply_android_metadata`·`pull_android_metadata` 가 호스트 Node 로 Play API 를 호출하고, owner 가 `register_android_credentials` 를 실행할 때 스크립트가 `node` 로 키 파일을 확인한다(`jq` 는 필요 없다).
-  - 파일 경로 파라미터(`serviceAccountPath`)는 Git Bash 형식의 절대 경로로 넘긴다(예: `/c/Users/me/Downloads/my-project-1a2b3c.json`). 사용자 이름이 한글이면(`/c/Users/홍길동/…`) 도구가 거부하므로 `/c/upplz/` 같은 사용자 폴더 밖 영문 폴더로 옮긴다.
+  - 파일 경로 파라미터(`serviceAccountPath`·`existingKeystorePath`)는 Git Bash 형식의 절대 경로로 넘긴다(예: `/c/Users/me/Downloads/my-project-1a2b3c.json`). 사용자 이름이 한글이면(`/c/Users/홍길동/…`) 도구가 거부하므로 `/c/upplz/` 같은 사용자 폴더 밖 영문 폴더로 옮긴다.

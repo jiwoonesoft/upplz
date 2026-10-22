@@ -1,5 +1,5 @@
 {
   "name": "upplz",
-  "version": "2026.10.6",
+  "version": "2026.10.7",
   "description": "웹 게임/앱을 iOS(맥 로컬 빌드)·Android(에이전트 빌드 + 호스트 JDK 서명·Node Play API — 맥·윈도)로 빌드·배포하는 upplz 워크플로우 스킬 모음. 테스트 업로드(빌드만)·출시 업로드(메타·아이콘·스샷 점검 포함)·메타데이터·아이콘·스크린샷. MCP 서버는 번들하지 않는다 — 앱 저장소마다 claude mcp add(local 범위)로 그 프로젝트의 키를 등록한다(/upplz:init §0 이 안내)."
 }

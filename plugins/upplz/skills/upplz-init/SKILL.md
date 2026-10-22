@@ -140,7 +140,7 @@ owner 전용 도구는 **22개 중 3개**다(서버 `requireOwner` 가드 기준
 | `setup_match_repo` | ⑧ 인증서 저장소 초기화(iOS) | 인증서 발급·`forceNuke` 가 프로젝트 전체의 코드서명 자산을 바꾼다 |
 | `register_android_credentials` | Android 6 | Play Service Account 를 인증서 저장소에 넣는다 |
 
-**`setup_android_keystore` 는 조건부다(D3)** — 저장소 URL·프로젝트 비밀번호가 이미 저장된 프로젝트(`android.certRepoUrl: true` ∧ `apple.matchPasswordStored: true`)에서는 협업자도 `setup_android_keystore({ packageName })` 로 자기 앱의 keystore 를 준비한다(기존 파일은 덮어쓰지 않는다). 그 둘이 없거나 `matchRepoUrl`·`matchPassword` 를 넘기면 `OWNER_ONLY` 다 — `nextStepHint` 가 어느 쪽인지 이미 구분해 말한다.
+**`setup_android_keystore` 는 조건부다(D3)** — 저장소 URL·프로젝트 비밀번호가 이미 저장된 프로젝트(`android.certRepoUrl: true` ∧ `apple.matchPasswordStored: true`)에서는 협업자도 `setup_android_keystore({ packageName })` 로 자기 앱의 keystore 를 준비한다(기존 파일은 덮어쓰지 않는다. 가져오기·생성 파라미터 `existingKeystorePath`·`createNew` 도 협업자가 넘긴다). 그 둘이 없거나 `matchRepoUrl`·`matchPassword` 를 넘기면 `OWNER_ONLY` 다 — `nextStepHint` 가 어느 쪽인지 이미 구분해 말한다.
 
 **이 표에 없는 도구는 협업자도 호출한다** — `analyze_repository`·`get_setup_status`·`setup_project`·`register_bundle_id`·`add_provisioning_profile`·`start_build`·`sign_android_bundle`·`get_build_status`·`report_build_result`·`upload_to_store`·`add_testers`·`apply_ios_metadata`·`pull_ios_metadata`·`apply_android_metadata`·`pull_android_metadata`·`generate_app_icon`·`generate_ios_screenshots`·`generate_native_screenshots`. 막혀 있다고 가정하지 말 것.
 
@@ -183,7 +183,7 @@ owner 전용 도구는 **22개 중 3개**다(서버 `requireOwner` 가드 기준
 
 이 절은 **owner 가 공유 자산을 등록하는 경로**다. 등록 도구는 파일 **본문을 받지 않는다** — 파일의 **절대 경로**를 받아, 사용자 머신에서 파일을 암호화해 인증서 저장소에 push 하는 스크립트를 돌려준다. 그래서 `.p8`·Service Account JSON 의 본문은 대화 기록·서버 어디에도 들어가지 않는다.
 
-수집 대상(iOS): **.p8 파일의 절대 경로 · Key ID · Issuer ID · Team ID · (아직 없을 때만) 인증서 저장소 URL · (최초 1회) 프로젝트 비밀번호(8자 이상) · Bundle ID · 앱 이름**. Android: **패키지명 · Service Account 키 파일의 절대 경로 · 그 파일의 `client_email` · 인증서 저장소 URL(Android 전용 프로젝트만 — iOS 를 이미 설정했으면 같은 저장소가 자동으로 쓰인다) · (최초 1회) 프로젝트 비밀번호**.
+수집 대상(iOS): **.p8 파일의 절대 경로 · Key ID · Issuer ID · Team ID · (아직 없을 때만) 인증서 저장소 URL · (최초 1회) 프로젝트 비밀번호(8자 이상) · Bundle ID · 앱 이름**. Android: **패키지명 · Service Account 키 파일의 절대 경로 · 그 파일의 `client_email` · 인증서 저장소 URL(Android 전용 프로젝트만 — iOS 를 이미 설정했으면 같은 저장소가 자동으로 쓰인다) · (최초 1회) 프로젝트 비밀번호 · (이미 Play 에 출시된 앱만) 사용 중인 업로드 keystore 파일의 절대 경로와 그 비밀번호(키 비밀번호가 따로 있으면 그것도, 키가 여럿이면 업로드 키 alias)**. keystore 비밀번호는 도구에 넘기지 않고 스크립트를 실행할 때 env(`OLD_KEYSTORE_PASSWORD`)로만 쓴다.
 
 **이미 저장된 값은 다시 받지 않는다.** `get_setup_status` 의 `apple.matchPasswordStored: true` 면 프로젝트 비밀번호는 **묻지도 넘기지도 않는다** — 저장값과 다른 값은 `PRECONDITION_FAILED` 로 거부되고(바꾸면 인증서 저장소의 모든 파일이 풀리지 않는다), 같은 값이면 받을 이유가 없다. 인증서 저장소 URL 도 이미 있으면(`apple.matchRepoUrl`·`android.certRepoUrl`) 묻지 않고 `matchRepoUrl` 을 뺀다(넘기면 저장값을 덮어쓴다).
 
@@ -199,7 +199,7 @@ owner 전용 도구는 **22개 중 3개**다(서버 `requireOwner` 가드 기준
 ### 저장
 
 - **iOS 크레덴셜**: `register_ios_credentials({ authKeyPath, keyId, issuerId, teamId, matchRepoUrl?, matchPassword? })` — **owner 전용**. `matchRepoUrl` 은 프로젝트에 아직 없을 때만(최초 등록) 넘긴다 — 키 교체·Android 를 먼저 설정한 프로젝트는 빼면 저장값이 쓰인다. 식별자는 프로젝트에 저장하고, 응답의 `script` 를 `env.MATCH_PASSWORD` 와 함께 실행하면 `.p8` 가 인증서 저장소의 `upplz/ios/AuthKey.p8.enc` 로 암호화돼 push 된다. **프로젝트에 비밀번호가 아직 없으면 `matchPassword` 는 필수**다(없으면 `PRECONDITION_FAILED`). 키 교체도 같은 도구를 다시 실행한다 — 응답 `replaced: true`(저장돼 있던 Key ID 가 이번 값과 다를 때만)와 `previousKeyId` 가 오면 옛 키를 App Store Connect 에서 Revoke 하라고 안내한다. 같은 Key ID 로 다시 실행하면 `replaced: false` 다(기존 프로젝트 이관 등).
-- **Android keystore**: `setup_android_keystore({ packageName, matchRepoUrl?, matchPassword? })` — owner, 또는 URL·비밀번호가 저장된 프로젝트의 협업자(D3). keystore 를 인증서 저장소에 준비하는 스크립트를 받는다. keystore 비밀번호는 프로젝트 비밀번호와 **같은 값**이다. **Android 전용 프로젝트의 첫 셋업**(저장소 URL·프로젝트 비밀번호가 아직 없음)이면 `matchRepoUrl`·`matchPassword` 를 함께 넘겨 셋을 한 번에 준비한다 — Play Service Account 없이도 첫 AAB 를 만들 수 있다. 이미 저장돼 있으면 둘 다 뺀다(비밀번호 없이 부르면 `PRECONDITION_FAILED`, 저장값과 다르면 거부).
+- **Android keystore**: `setup_android_keystore({ packageName, matchRepoUrl?, matchPassword?, existingKeystorePath?, existingKeystoreAlias?, createNew? })` — owner, 또는 URL·비밀번호가 저장된 프로젝트의 협업자(D3). keystore 를 인증서 저장소에 준비하는 스크립트를 받는다. keystore 비밀번호는 프로젝트 비밀번호와 **같은 값**이다. **Android 전용 프로젝트의 첫 셋업**(저장소 URL·프로젝트 비밀번호가 아직 없음)이면 `matchRepoUrl`·`matchPassword` 를 함께 넘겨 셋을 한 번에 준비한다 — Play Service Account 없이도 첫 AAB 를 만들 수 있다. 이미 저장돼 있으면 둘 다 뺀다(비밀번호 없이 부르면 `PRECONDITION_FAILED`, 저장값과 다르면 거부). **스크립트가 keystore 를 찾지 못하면 새로 만들지 않고 `[ask]` 로 멈춘다** — 그때는 사용자에게 Play 에 올린 적이 있는지 묻고, 사용 중인 keystore 가 있으면 `existingKeystorePath` 로, 신규 앱이라고 사용자가 확인했을 때만 `createNew: true` 로 다시 호출한다(절차는 `<플러그인 루트>/references/first-time-setup.md` 「Android 최초 셋업」 5).
 - **Android Play 크레덴셜**: `register_android_credentials({ serviceAccountPath, clientEmail, matchRepoUrl?, matchPassword? })` — **owner 전용**(`matchRepoUrl`·`matchPassword` 는 아직 없을 때만 — keystore 를 먼저 준비했다면 뺀다). `client_email` 은 프로젝트에 저장하고(이 값의 존재가 "SA 등록됨" 이다), 응답의 `script` 가 키 파일을 `upplz/android/service-account.json.enc` 로 암호화해 push 한다. 교체 시 스크립트가 옛 `private_key_id` 를 출력하므로 Google Cloud 에서 그 키를 삭제하라고 안내한다. SA 는 새면 Google Cloud 에서 키를 회전하는 것 말고는 수습할 길이 없다.
 - 입력 형식 오류는 `INVALID_INPUT`의 `errors`(필드별 안내)로 돌아온다 — 해당 값만 다시 받아 재호출한다.
 - 등록 스크립트를 같은 파일로 두 번 실행하면 두 번째는 `[done] 변경 없음` 으로 끝난다(커밋·push 없음) — 실패가 아니다.
@@ -208,7 +208,7 @@ owner 전용 도구는 **22개 중 3개**다(서버 `requireOwner` 가드 기준
 
 1. **iOS**: `get_setup_status`를 다시 호출해 `setupComplete: true`를 확인한다(아니면 `nextStep`으로 남은 단계를 이어서 수행).
 2. **Android**: `get_setup_status({ platform: "android", packageName }).setupComplete` 로 확인한다(아니면 최상위 `nextStep`으로 남은 단계를 이어서 수행 — iOS 와 같은 루프다).
-   - **`android.buildSucceeded: false` 면 keystore 파일은 미확인 상태다.** 서버는 인증서 저장소 안을 볼 수 없어 `setup_android_keystore` 발급 기록으로 추정했을 뿐이므로, **스크립트를 실제로 실행해 마쳤는지 사용자에게 한 번 확인**한다(최종 확인은 `sign_android_bundle` 의 signScript 가 한다).
+   - **`android.buildSucceeded: false` 면 keystore 파일은 미확인 상태다.** 서버는 인증서 저장소 안을 볼 수 없어 `setup_android_keystore` 발급 기록으로 추정했을 뿐이므로, **사용자에게 스크립트가 `[done]` 으로 끝났는지 확인**한다(최종 확인은 `sign_android_bundle` 의 signScript 가 한다). 스크립트가 기존 keystore 를 찾지 못해 새로 만들지 않고 멈췄다면(`[ask]`) 저장소에는 아직 keystore 가 없다 — 이미 출시된 앱이면 `existingKeystorePath` 로, 신규 앱이라고 사용자가 확인했을 때만 `createNew: true` 로 다시 호출한다(`<플러그인 루트>/references/first-time-setup.md` 「Android 최초 셋업」 5).
 3. **iOS+Android 프로젝트**: 한 번의 호출로 둘 다 본다 — 최상위는 `platform` 이 고른 쪽이고, 다른 쪽은 응답의 `ios`/`android` 블록에 있다.
 4. 종료 안내:
    > "배포 설정이 끝났습니다. 이제 '배포하자' 또는 '테스트 빌드 올려줘' 로 빌드를 시작할 수 있습니다."

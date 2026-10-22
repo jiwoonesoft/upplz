@@ -90,7 +90,7 @@ codex plugin add upplz@upplz
 ### 공통
 - 서버는 키를 해시 조회해 **`customerId`·`projectId`·역할(`owner`|`collaborator`)을 확정**한다(`src/mcp/auth.ts`) — 도구는 LLM 입력이 아니라 이 값만 신뢰한다.
 - **API 키 발급**: 고객은 대시보드에서 **프로젝트를 먼저 만들고 그 프로젝트 페이지에서 키를 발급**받아야 한다.
-- **키 1개 = 프로젝트 1개**: 프로젝트를 바꾸려면 Claude Code 는 `/plugin` → upplz 설정에서, Codex 는 `~/.codex/.env` 의 값을 바꾸고 재시작한다.
+- **키 1개 = 프로젝트 1개**: Claude Code 는 앱 저장소마다 그 프로젝트의 키를 `claude mcp add --scope local` 로 등록한다(디렉토리 = 프로젝트, 재발급했으면 그 프로젝트 키를 등록한 저장소마다 대시보드 「Claude Code」탭의 줄을 다시 실행한 뒤 재시작). Codex 는 키가 전역 1개라 프로젝트를 바꿀 때 `~/.codex/.env` 의 값을 바꾸고 재시작한다.
 
 ## 버전 업데이트 배포
 

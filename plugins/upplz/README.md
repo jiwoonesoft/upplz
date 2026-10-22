@@ -49,7 +49,7 @@ codex plugin add upplz@upplz
 - 서버는 Streamable HTTP(`<엔드포인트>/mcp`) + `Authorization: Bearer <API Key>` 다. API 키는 upplz 대시보드의 **프로젝트 페이지**에서 발급한다.
 - Claude Code: 앱 저장소에서 `claude mcp add --scope local … --header` 로 등록한 서버가 헤더를 싣는다(`~/.claude.json` 의 그 프로젝트 경로 아래, 평문 0600).
 - Codex: `codex mcp add upplz --url <엔드포인트>/mcp --bearer-token-env-var UPPLZ_API_KEY`. 키는 Codex 가 기동 때 읽는 `~/.codex/.env` 에 둔다(셸 export·config.toml 평문 불필요).
-- **키 1개 = 프로젝트 1개.** 다른 프로젝트를 배포하려면 그 프로젝트의 키로 교체한다 — Claude Code 는 `/plugin` → upplz 설정, Codex 는 `~/.codex/.env` 의 값 교체 후 재시작.
+- **키 1개 = 프로젝트 1개.** Claude Code 는 앱 저장소마다 그 프로젝트의 키를 `claude mcp add --scope local` 로 등록하므로 교체할 것이 없다(재발급했으면 그 프로젝트 키를 등록한 저장소마다 대시보드 「Claude Code」탭의 줄을 다시 실행한 뒤 재시작). Codex 는 키가 전역 1개라 다른 프로젝트를 배포하려면 `~/.codex/.env` 의 값을 그 프로젝트의 키로 바꾸고 재시작한다.
 - 스킬·참조 문서는 서로를 **플러그인 루트 기준 상대 경로**로 가리킨다 — 플러그인 루트 = SKILL.md 의 두 단계 위(`skills/<이름>/SKILL.md`). Claude Code 의 플러그인 루트 변수는 커맨드(`commands/init.md`)에서만 쓴다(Codex 에는 그 변수가 없다).
 
 ## 전제

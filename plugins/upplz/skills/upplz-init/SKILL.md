@@ -77,7 +77,7 @@ Codex 플러그인은 MCP 서버를 번들하지 않는다(설치 때 값을 묻
 
 1. `<플러그인 루트>/references/routing.md` 를 읽어 **머신(맥/윈도) × 대상(iOS/Android)**을 확정한다. 게이트에 걸리면(iOS ∧ 비맥) 그 문서의 안내로 **중단**한다. 윈도에서는 Android 만 진행한다(Git Bash + JDK + Node.js — 미검증).
 2. 첫 upplz MCP 도구 호출이 연결/인증에 실패하면 routing.md의 **MCP 연결 게이트**를 그대로 따르고 중단한다. 특히 401 `invalid_or_inactive`면:
-   > "이 키는 폐기됐거나 다른 프로젝트의 키입니다. upplz 대시보드의 **프로젝트 페이지**에서 키를 다시 발급받아 넣어 주세요 — Claude Code 는 `/plugin` → upplz 설정에, Codex 는 `~/.codex/.env` 의 `UPPLZ_API_KEY` 에(§0 의 첫 줄 — `.env` 기록 명령) 넣고 재시작합니다."
+   > "이 키는 폐기됐거나 다른 프로젝트의 키입니다. upplz 대시보드의 **프로젝트 페이지**에서 탭에는 지금 활성 키가 채워져 있으니 먼저 그 명령을 다시 실행하고 재시작해 주세요 — Claude Code 는 이 앱 저장소 디렉토리에서 「Claude Code」탭 ▸ MCP 연결의 줄을 실행한 뒤 그 디렉토리에서 Claude Code 를 재시작하고, Codex 는 「Codex」탭 ▸ MCP 연결의 첫 줄(`.env` 기록 명령)을 실행한 뒤 Codex 를 재시작합니다. 그래도 401 이면 키를 재발급하세요. 재발급하면 이 프로젝트 키를 등록한 다른 저장소와 Codex `.env` 도 새 키로 다시 등록해야 합니다."
 
 ## 2. 상태 판정 — 서버 + 로컬
 
@@ -154,6 +154,7 @@ owner 전용 도구는 **22개 중 3개**다(서버 `requireOwner` 가드 기준
    - `register_ios_credentials`(⑥) / `setup_match_repo`(⑧) → **owner 전용이라 여기서 멈춘다.** 3을 따른다.
    - `add_provisioning_profile`(⑨) → **직접 수행한다**(상속 프로젝트·Bundle ID 를 바꾼 프로젝트에서 나온다 — ⑧ 을 owner 에게 요청하지 않는다).
    - `setup_android_keystore` → `android.certRepoUrl` ∧ `apple.matchPasswordStored` 면 **직접 수행**, 아니면 owner 요청(힌트가 구분한다 — D3).
+   - `register_android_credentials` → **owner 전용이라 owner 에게 요청한다**(3). 단 Play Service Account 는 업로드·메타데이터에만 필요하므로, 기다리는 동안 빌드·서명(first-time-setup.md Android 7)은 직접 진행한다.
    - 위 표·조건부 설명(`setup_android_keystore`)에 없는데도 `OWNER_ONLY` 가 오면 표가 서버와 어긋난 것이다. 안내를 지어내지 말고 응답의 `message` 를 그대로 전달한다.
 3. **멈출 때**: 서버가 준 `nextStepHint`를 **그대로 전달한다** — 무엇을 누가 해야 하는지가 이미 그 문장에 들어 있다(문구를 다시 쓰지 말 것). 여기에 두 가지만 덧붙인다:
    - 지금까지 **이미 끝낸 준비**를 요약한다(owner 가 중복으로 하지 않도록).
@@ -170,9 +171,9 @@ owner 전용 도구는 **22개 중 3개**다(서버 `requireOwner` 가드 기준
    - 인증서 저장소에 keystore 가 없으면 `sign_android_bundle` 의 signScript 가 멈추고 "owner 가 `setup_android_keystore` 를 실행해야 한다"고 알려 준다 — **그 문구를 그대로 전달**한다(URL·비밀번호가 저장된 프로젝트면 협업자 본인이 실행한다 — D3).
    - Play Service Account 가 미등록이면 `upload_to_store`·`apply_android_metadata`·`pull_android_metadata` 가 `PRECONDITION_FAILED` 로 막는다 — owner 에게 `register_android_credentials` 실행을 요청하고 그 단계만 대기한다.
    - 저장소 접근이 거부되면(clone 실패) owner 에게 **GitHub collaborator 추가**를 요청한다. upplz 는 이 권한을 부여할 수도 확인할 수도 없다.
-   - **owner 에게 요청할 때는 한 번에 묶는다.** Android 의 owner 요청 단계는 최대 둘이고(keystore 는 URL·비밀번호가 없을 때만) GitHub 권한까지 셋인데, 하나씩 요청하면 빌드에서 막히고 업로드에서 또 막혀 왕복이 그만큼 늘어난다. 요청문에 **① `setup_android_keystore({ packageName })` ② `register_android_credentials({ serviceAccountPath, clientEmail })` ③ 인증서 저장소에 나를 GitHub collaborator 로 추가** 를 함께 적는다. 그동안 로컬 선행 단계(Android 1–4)를 마쳐 둔다. owner 가 끝내면 **첫 빌드부터 재개**한다.
+   - **owner 에게 요청할 때는 한 번에 묶는다.** Android 의 owner 요청 단계는 최대 둘이고(keystore 는 URL·비밀번호가 없을 때만) GitHub 권한까지 셋인데, 하나씩 요청하면 빌드에서 막히고 업로드에서 또 막혀 왕복이 그만큼 늘어난다. 요청문에 **① `setup_android_keystore({ packageName, … })`(파라미터는 힌트에 적힌 그대로) ② `register_android_credentials({ serviceAccountPath, clientEmail })` ③ 인증서 저장소에 나를 GitHub collaborator 로 추가** 를 함께 적는다(`android.serviceAccountStored: true` 면 ② 는 뺀다 — `nextStepHint` 도 뺀다). 그동안 로컬 선행 단계(Android 1–4)를 마쳐 둔다. owner 가 끝내면 **첫 빌드부터 재개**한다.
    - **keystore 비밀번호를 따로 정하지 않는다.** keystore 비밀번호는 프로젝트 비밀번호와 **같은 값**이고, `sign_android_bundle` 응답 `env.MATCH_PASSWORD` 로 자동 전달된다.
-   - **Android 도 iOS 와 같은 `nextStep` 루프(위 2)를 돈다** — `get_setup_status({ platform: "android", packageName })` 로 호출하면 최상위 `nextStep`·`nextStepHint`·`setupComplete` 가 Android 것으로 온다(`packageName` 은 선택 — 알면 넘겨서 요청문에 패키지명이 찍히게 하고, 모르면 생략한다). `setup_android_keystore`·`register_android_credentials` 에서 멈추면 **3 을 따른다** — 서버 힌트가 이미 **둘을 한 번에 요청하라**고 말하므로 문구를 다시 쓰지 말고 그대로 전달한다. 단 `setup_android_keystore` 힌트가 **직접형**(D3 — 저장소 URL·비밀번호가 저장된 프로젝트의 협업자)이면 요청이 아니라 본인이 실행한다.
+   - **Android 도 iOS 와 같은 `nextStep` 루프(위 2)를 돈다** — `get_setup_status({ platform: "android", packageName })` 로 호출하면 최상위 `nextStep`·`nextStepHint`·`setupComplete` 가 Android 것으로 온다(`packageName` 은 선택 — 알면 넘겨서 요청문에 패키지명이 찍히게 하고, 모르면 생략한다). `setup_android_keystore`·`register_android_credentials` 에서 멈추면 **3 을 따른다** — 서버 힌트가 남은 owner 단계를 이미 **한 번에 묶어** 말하므로(keystore 단계: `android.serviceAccountStored` 가 false 면 keystore·SA 둘, true 면 keystore 만 / SA 단계: SA 하나) 문구를 다시 쓰지 말고 그대로 전달한다. 단 `setup_android_keystore` 힌트가 **직접형**(D3 — 저장소 URL·비밀번호가 저장된 프로젝트의 협업자)이면 요청이 아니라 본인이 실행한다.
 
 ### owner (`team.role: "owner"`)
 
